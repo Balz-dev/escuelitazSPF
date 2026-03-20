@@ -73,4 +73,4 @@ Para mantener un repositorio profesional, seguimos estas reglas:
 - **Supabase**: Las migraciones se aplican automáticamente vía GitHub Actions usando `supabase db push`.
 
 ---
-*Desarrollado con ❤️ para la comunidad de Escuelitaz.*
+*Desarrollado con ❤️ para la comunidad de Escuelitaz..*
