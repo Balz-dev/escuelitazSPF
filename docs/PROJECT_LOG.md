@@ -1,5 +1,20 @@
 # Diario del Proyecto - Bitácora
 
+## 📅 2026-03-20
+**⏱️ Tiempo invertido:** 45 minutos (incluyendo diagnóstico y corrección de despliegue)
+
+### ✅ Qué se logró
+- **Corrección de Despliegue en Cloudflare**: Se identificó y solucionó un error de compilación crítico causado por la falta de la dependencia `@vitejs/plugin-react` que era requerida por `vitest.config.ts`.
+- **Optimización de Typescript**: Se actualizó `tsconfig.json` para excluir archivos de configuración de testing (`vitest.config.ts`) del proceso de typechecking de Next.js, previniendo errores similares en el futuro.
+- **Fix de CSS Crítico**: Se corrigió un warning en `globals.css` referente al uso de `calc()` en media queries modernas que causaba problemas con el optimizador de CSS durante el build de producción.
+- **Sincronización de Repositorio**: Se empujaron los cambios directamente a GitHub para activar el redeploy automático en Cloudflare Pages.
+
+### 🚧 Pendientes para la siguiente sesión
+- Monitorear el estado del despliegue en Cloudflare (Build History).
+- Continuar con las tareas de la Fase 2 si el despliegue es exitoso.
+
+---
+
 ## 📅 2026-03-18
 **⏱️ Tiempo invertido:** 2 horas y 10 minutos (aprox.)
 
