@@ -7,6 +7,7 @@
 - **Corrección de Despliegue en Cloudflare**: Se identificó y solucionó un error de compilación crítico causado por la falta de la dependencia `@vitejs/plugin-react` que era requerida por `vitest.config.ts`.
 - **Optimización de Typescript**: Se actualizó `tsconfig.json` para excluir archivos de configuración de testing (`vitest.config.ts`) del proceso de typechecking de Next.js, previniendo errores similares en el futuro.
 - **Fix de CSS Crítico**: Se corrigió un warning en `globals.css` referente al uso de `calc()` en media queries modernas que causaba problemas con el optimizador de CSS durante el build de producción.
+- **Sincronización de pnpm-lock.yaml**: Se detectó que el archivo de bloqueo no estaba actualizado con respecto a `package.json` (faltaba `@vitejs/plugin-react`), lo que bloqueaba el despliegue en Cloudflare con el error `ERR_PNPM_OUTDATED_LOCKFILE`. Se forzó la actualización y se empujó al repositorio.
 - **Sincronización de Repositorio**: Se empujaron los cambios directamente a GitHub para activar el redeploy automático en Cloudflare Pages.
 
 ### 🚧 Pendientes para la siguiente sesión
