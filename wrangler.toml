@@ -3,9 +3,10 @@ name = "escuelitazspf"
 compatibility_date = "2024-11-01"
 pages_build_output_dir = "out"
 
-[vars]
-# Estas variables se inyectan en tiempo de ejecución si usaras el Edge Runtime,
-# pero para exportación estática ('output: export') Next.js las necesita en el build.
-# Asegúrate de definirlas en el panel de Cloudflare (Environment Variables -> Production/Preview).
-NEXT_PUBLIC_SUPABASE_URL = "PROPORCIONAR_EN_PANEL"
-NEXT_PUBLIC_SUPABASE_ANON_KEY = "PROPORCIONAR_EN_PANEL"
+# Las variables NEXT_PUBLIC_* deben configurarse en el panel de Cloudflare Pages:
+# Settings → Variables and Secrets → "Add variable" (sección de Production/Preview)
+# IMPORTANTE: Para que el build de Next.js las detecte, activa "Available during build time"
+#
+# Variables requeridas:
+#   NEXT_PUBLIC_SUPABASE_URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY
