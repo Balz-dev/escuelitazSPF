@@ -1,0 +1,14 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "escuelitazspf"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "out"
+
+[build]
+command = "pnpm build"
+
+[vars]
+# Estas variables se inyectan en tiempo de ejecución si usaras el Edge Runtime,
+# pero para exportación estática ('output: export') Next.js las necesita en el build.
+# Asegúrate de definirlas en el panel de Cloudflare (Environment Variables -> Production/Preview).
+NEXT_PUBLIC_SUPABASE_URL = "PROPORCIONAR_EN_PANEL"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "PROPORCIONAR_EN_PANEL"
