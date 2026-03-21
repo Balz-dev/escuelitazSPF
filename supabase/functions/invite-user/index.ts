@@ -81,9 +81,9 @@ serve(async (req: any) => {
     await supabaseClient
       .from('user_invitations')
       .insert({
-         invited_email: isEmail ? emailOrPhone : null,
-         invited_phone: isEmail ? null : emailOrPhone,
-         invited_role: role,
+         email: isEmail ? emailOrPhone : null,
+         phone: isEmail ? null : emailOrPhone,
+         role: role,
          school_id: schoolId,
          status: 'pending'
       });
@@ -96,7 +96,7 @@ serve(async (req: any) => {
         loginIdentifier: emailOrPhone,
         tempPassword,
         // @ts-ignore: Deno.env
-        loginUrl: `${Deno.env.get('PUBLIC_URL') || 'https://escuelitaz.vercel.app'}/login`
+        loginUrl: `${Deno.env.get('PUBLIC_URL') || 'https://escuelitazspf.pages.dev'}/login`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
