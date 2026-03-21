@@ -30,7 +30,7 @@
 - [x] **UI de Login**: Formulario premium con soporte OTP y Password.
 - [x] **Módulo de Registro/Invitación**: Flujo jerárquico (SuperAdmin -> Director -> Docente -> Padre).
 - [x] **SaaS Onboarding**: Página de `/register` para escuelas y periodo de prueba de Ciclo Escolar.
-- [x] **SuperAdmin Dashboard**: Ruta `/admin/requests` para activación instantánea de instituciones.
+- [x] **SuperAdmin Dashboard**: Ruta `/admin/requests` para activación instantánea, rechazo con motivo y re-activación de instituciones (Professional UI).
 
 ---
 

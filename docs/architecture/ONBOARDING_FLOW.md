@@ -14,7 +14,9 @@ El sistema sigue una estructura de cascada para la creación de cuentas:
 
 1. **Solicitud (`/register`)**: El director interesado envía sus datos (Nombre Escuela, Director, WhatsApp).
 2. **Revisión Administrativa (`/admin/requests`)**: El SuperAdmin revisa la solicitud en una cola de pendientes.
-3. **Activación**: Al aprobar una solicitud:
+   - **Rechazo con Motivo**: Al rechazar una escuela, se debe proporcionar una razón que se guarda en `rejection_reason`.
+   - **Re-activación**: Las escuelas rechazadas pueden ser aprobadas más tarde si se decide cambiar de opinión.
+3. **Activación**: Al aprobar una solicitud (o re-aprobar una rechazada):
    - Se crea el registro oficial en la tabla `schools`.
    - Se le asigna un estado `is_active: true`.
    - Se activa un periodo de prueba de **un ciclo escolar completo**.

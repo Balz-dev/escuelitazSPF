@@ -1,5 +1,20 @@
 # Diario del Proyecto - Bitácora
 
+## 📅 2026-03-20 (Sesión 2)
+**⏱️ Tiempo invertido:** 3 horas
+
+### ✅ Qué se logró
+- **Rediseño del Dashboard Administrativo**: Se implementó una interfaz profesional en `/admin/requests` con estadísticas interactivas, sistema de pestañas por estado (Pendientes, Aprobadas, Rechazadas) y buscador global.
+- **Sistema de Rechazo con Motivo**: Se añadió soporte para registrar un `rejection_reason` al rechazar solicitudes, mejorando el control interno y la trazabilidad.
+- **Re-activación de Solicitudes**: Se habilitó la capacidad de aprobar solicitudes previamente rechazadas ("Re-activar y Aprobar"), permitiendo corregir decisiones sin re-registro.
+- **Sincronización de Base de Datos y Tipos**: Se agregaron las columnas `rejection_reason` y `updated_at` a la tabla `school_onboarding_requests` y se actualizaron los tipos en `database.types.ts`.
+- **Mejora en Invitaciones**: Se corrigió el `loginUrl` en la Edge Function `invite-user` para apuntar correctamente al dominio de Cloudflare Pages y se personalizó el mensaje de WhatsApp para mayor profesionalismo.
+
+### 🚧 Pendientes para la siguiente sesión
+- Implementar la gestión de docentes y alumnos desde el panel del Director ya activado.
+- Refinar la página de `/suspended` con más información de contacto dinámica.
+---
+
 ## 📅 2026-03-20
 **⏱️ Tiempo invertido:** 45 minutos (incluyendo diagnóstico y corrección de despliegue)
 
