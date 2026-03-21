@@ -93,8 +93,10 @@ export default function LoginPage() {
   }
 
   const checkProfileAndRedirect = async (userOverride?: any) => {
-    // 1. Obtener la metadata del usuario
-    const userMetadata = userOverride?.user_metadata || (await authService.getCurrentUser() as any)?.user_metadata
+    // 1. Obtener el usuario actual
+    const user = userOverride || await authService.getCurrentUser()
+    const userMetadata = user?.user_metadata
+    const appMetadata = user?.app_metadata
     
     // 2. Verificar si debe cambiar contraseña
     if (userMetadata?.must_change_password) {
@@ -103,7 +105,7 @@ export default function LoginPage() {
     }
 
     // 3. Redirigir según el rol
-    const role = userMetadata?.role as string
+    const role = (appMetadata?.role || userMetadata?.role) as string
     
     switch (role) {
       case 'director':

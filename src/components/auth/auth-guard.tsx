@@ -65,7 +65,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
         // Con sesión activa → redirigir si está en login, o verificar escuela si no
         if (currentSession) {
           if (normalizedPath === '/login' || normalizedPath === '/register' || normalizedPath === '/') {
-            const role = currentSession.user?.user_metadata?.role
+            const role = currentSession.user?.app_metadata?.role || currentSession.user?.user_metadata?.role
             switch (role) {
               case 'director': router.push('/director'); break
               case 'docente': router.push('/docente'); break
@@ -78,7 +78,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
           }
 
           if (!onPublicPath) {
-            const schoolId = currentSession.user?.user_metadata?.school_id
+            const schoolId = currentSession.user?.app_metadata?.school_id || currentSession.user?.user_metadata?.school_id
             if (schoolId) {
               const { data: school, error } = await supabase
                 .from('schools')

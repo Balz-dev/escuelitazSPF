@@ -57,12 +57,14 @@ serve(async (req: any) => {
       email_confirm: true,
       phone_confirm: true,
       user_metadata: { 
-        role, 
-        school_id: schoolId, 
         full_name: metadata.full_name,
         username_display: firstName, // Guardamos el nombre "de usuario" en metadata
         must_change_password: true 
       },
+      app_metadata: {
+        role, 
+        school_id: schoolId
+      }
     });
 
     if (authError) {

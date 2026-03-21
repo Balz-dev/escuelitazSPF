@@ -47,7 +47,7 @@ export default function SetPasswordPage() {
       setSuccess(true)
       
       // 2. Redirigir según rol tras el éxito
-      const role = data.user?.user_metadata?.role
+      const role = data.user?.app_metadata?.role || data.user?.user_metadata?.role
       
       setTimeout(() => {
         switch (role) {
