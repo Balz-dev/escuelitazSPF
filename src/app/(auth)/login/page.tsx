@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
-import { createClient } from '@/infrastructure/supabase/client'
+import { User } from '@supabase/supabase-js'
 
 const authService = new SupabaseAuthService()
 
@@ -44,8 +44,8 @@ export default function LoginPage() {
     try {
       await authService.signInWithOtp(identifier)
       setIsVerifyingOtp(true)
-    } catch (err: any) {
-      setError(err.message || 'Error al solicitar el código')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error al solicitar el código')
     } finally {
       setIsLoading(false)
     }
@@ -59,8 +59,8 @@ export default function LoginPage() {
     try {
       await authService.verifyOtp(identifier, otp)
       await checkProfileAndRedirect()
-    } catch (err: any) {
-      setError(err.message || 'Código incorrecto o expirado')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Código incorrecto o expirado')
     } finally {
       setIsLoading(false)
     }
@@ -72,31 +72,37 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      // Usar Supabase directo para login con password (no estaba en IAuthService pero lo implementamos aquí)
-      const { createClient } = await import('@/infrastructure/supabase/client')
-      const supabase = createClient()
+      const data = await authService.signInWithPassword(identifier, password)
       
-      const { data, error: loginError } = await supabase.auth.signInWithPassword(
-        identifier.includes('@') 
-          ? { email: identifier, password } 
-          : { phone: identifier, password }
-      )
-
-      if (loginError) throw loginError
+      if (!data?.user) throw new Error('No se pudo obtener el usuario')
       
       checkProfileAndRedirect(data.user)
 
-    } catch (err: any) {
-      setError(err.message || 'Credenciales incorrectas')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Credenciales incorrectas')
       setIsLoading(false)
     }
   }
 
-  const checkProfileAndRedirect = async (userOverride?: any) => {
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      await authService.signInWithGoogle()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión con Google')
+      setIsLoading(false)
+    }
+  }
+
+  const checkProfileAndRedirect = async (userOverride?: User | null) => {
     // 1. Obtener el usuario actual
-    const user = userOverride || await authService.getCurrentUser()
-    const userMetadata = user?.user_metadata
-    const appMetadata = user?.app_metadata
+    const session = await authService.getSession()
+    const user = userOverride || session?.user
+    if (!user) return
+
+    const userMetadata = user.user_metadata
+    const appMetadata = user.app_metadata
     
     // 2. Verificar si debe cambiar contraseña
     if (userMetadata?.must_change_password) {
@@ -107,6 +113,11 @@ export default function LoginPage() {
     // 3. Redirigir según el rol
     const role = (appMetadata?.role || userMetadata?.role) as string
     
+    if (!role) {
+      router.push('/unauthorized')
+      return
+    }
+
     switch (role) {
       case 'director':
         router.push('/director')
@@ -163,10 +174,10 @@ export default function LoginPage() {
       {authMode === 'password' && (
         <form className="space-y-4" onSubmit={handlePasswordLogin}>
           <div className="space-y-2">
-            <Label htmlFor="identifier">Correo o Teléfono</Label>
+            <Label htmlFor="identifier">Identificador</Label>
             <Input 
               id="identifier" 
-              placeholder="Tu usuario" 
+              placeholder="Email, Celular o Usuario" 
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required 
@@ -248,7 +259,13 @@ export default function LoginPage() {
         <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">O</span></div>
       </div>
 
-      <Button variant="outline" className="w-full" type="button" disabled={isLoading}>
+      <Button 
+        variant="outline" 
+        className="w-full" 
+        type="button" 
+        disabled={isLoading}
+        onClick={handleGoogleLogin}
+      >
          <span className="mr-2">G</span> Google
       </Button>
     </AuthLayout>

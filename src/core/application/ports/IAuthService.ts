@@ -1,10 +1,11 @@
 import { UserProfile } from '@/core/domain/entities/User'
+import { AuthResponse, AuthTokenResponse, Session } from '@supabase/supabase-js'
 
 export interface IAuthService {
   /**
    * Obtiene la sesión actual
    */
-  getSession(): Promise<any | null>
+  getSession(): Promise<Session | null>
 
   /**
    * Obtiene el perfil de usuario actual
@@ -24,10 +25,20 @@ export interface IAuthService {
   /**
    * Verifica el OTP recibido y autentica al usuario.
    */
-  verifyOtp(emailOrPhone: string, token: string): Promise<any>
+  verifyOtp(emailOrPhone: string, token: string): Promise<AuthResponse['data']>
 
   /**
    * Envía un link de invitación/acceso vía correo o teléfono invocando Edge Function
    */
-  inviteMember(emailOrPhone: string, schoolId: string, role: string, metadata?: any): Promise<any>
+  inviteMember(emailOrPhone: string, schoolId: string, role: string, metadata?: Record<string, unknown>): Promise<Record<string, unknown>>
+
+  /**
+   * Inicia sesión con el proveedor de Google.
+   */
+  signInWithGoogle(): Promise<void>
+
+  /**
+   * Inicia sesión con identificador (user/email/tel) y contraseña.
+   */
+  signInWithPassword(identifier: string, password: string): Promise<AuthResponse['data']>
 }

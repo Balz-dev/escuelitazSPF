@@ -85,6 +85,16 @@ export class SupabaseAdminService {
     return { success: true }
   }
 
+  async deleteRequest(requestId: string) {
+    const { error } = await this.supabase
+      .from('school_onboarding_requests')
+      .delete()
+      .eq('id', requestId)
+
+    if (error) throw error
+    return { success: true }
+  }
+
   async updateRequest(requestId: string, data: Partial<OnboardingRequestRow>) {
     const { error } = await this.supabase
       .from('school_onboarding_requests')

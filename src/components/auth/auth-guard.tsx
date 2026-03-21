@@ -8,7 +8,7 @@ export interface AuthGuardProps {
   children: React.ReactNode
 }
 
-const PUBLIC_PATHS = ['/', '/demo', '/login', '/register', '/enroll', '/set-password', '/suspended']
+const PUBLIC_PATHS = ['/', '/demo', '/login', '/register', '/enroll', '/set-password', '/suspended', '/unauthorized']
 
 function isPublicPath(pathname: string | null): boolean {
   if (!pathname) return false
@@ -64,8 +64,17 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
         // Con sesión activa → redirigir si está en login, o verificar escuela si no
         if (currentSession) {
+          const role = currentSession.user?.app_metadata?.role || currentSession.user?.user_metadata?.role
+          
+          // Si NO tiene rol y NO está en la página de unauthorized, enviarlo ahí
+          if (!role && normalizedPath !== '/unauthorized' && !onPublicPath) {
+            router.push('/unauthorized')
+            setIsChecked(true)
+            return
+          }
+
+          // Si YA tiene rol pero está en login/register/raíz, redirigir a su panel
           if (normalizedPath === '/login' || normalizedPath === '/register' || normalizedPath === '/') {
-            const role = currentSession.user?.app_metadata?.role || currentSession.user?.user_metadata?.role
             switch (role) {
               case 'director': router.push('/director'); break
               case 'docente': router.push('/docente'); break

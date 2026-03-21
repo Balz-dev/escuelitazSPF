@@ -6,8 +6,9 @@ import { SupabaseAdminService } from '@/infrastructure/supabase/services/Supabas
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from "@/components/ui/badge"
-import { Loader2, CheckCircle, XCircle, MessageCircle, MessageSquareText, ExternalLink, RefreshCcw, Edit, Eye, Trash, Search, AlertCircle } from 'lucide-react'
+import { Loader2, CheckCircle, XCircle, MessageCircle, MessageSquareText, ExternalLink, RefreshCcw, Edit, Eye, Trash, Search, AlertCircle, LogOut } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { useRouter } from 'next/navigation'
 
 const adminService = new SupabaseAdminService()
 
@@ -20,6 +21,9 @@ export default function AdminRequestsPage() {
   const [rejectingReq, setRejectingReq] = React.useState<any | null>(null)
   const [rejectionReason, setRejectionReason] = React.useState('')
   const [searchTerm, setSearchTerm] = React.useState('')
+  const [currentUser, setCurrentUser] = React.useState<any>(null)
+  const router = useRouter()
+  const supabase = createClient()
 
   const loadRequests = async () => {
     setIsLoading(true)
@@ -35,7 +39,19 @@ export default function AdminRequestsPage() {
 
   React.useEffect(() => {
     loadRequests()
+    
+    // Obtener datos del usuario actual
+    const getUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
+    }
+    getUserData()
   }, [])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   const handleApprove = async (req: any) => {
     setActionLoading(req.id)
@@ -67,6 +83,20 @@ export default function AdminRequestsPage() {
       await loadRequests()
     } catch (error) {
       alert('Error al rechazar')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleDelete = async (requestId: string) => {
+    if (!confirm('¿Estás seguro de eliminar este registro?')) return
+    
+    setActionLoading(requestId)
+    try {
+      await adminService.deleteRequest(requestId)
+      await loadRequests()
+    } catch (error) {
+      alert('Error al eliminar: ' + (error as Error).message)
     } finally {
       setActionLoading(null)
     }
@@ -106,11 +136,49 @@ export default function AdminRequestsPage() {
           </h1>
           <p className="text-muted-foreground mt-1">Cola de solicitudes de onboarding y activación de servicios.</p>
         </div>
-        <div className="flex gap-2">
-           <Button variant="outline" size="sm" onClick={loadRequests} disabled={isLoading}>
-             <RefreshCcw className={`h-4 w-4 mr-2 ${isLoading && 'animate-spin'}`} />
-             Actualizar
-           </Button>
+        
+        <div className="flex items-center gap-4 bg-muted/30 p-2 pr-4 rounded-full border border-muted-foreground/10 hover:bg-muted/50 transition-all">
+          {currentUser && (
+            <>
+              <div className="relative group">
+                {currentUser.user_metadata?.avatar_url ? (
+                  <img 
+                    src={currentUser.user_metadata.avatar_url} 
+                    alt="Profile" 
+                    className="h-10 w-10 rounded-full border-2 border-primary/20 group-hover:border-primary/50 transition-all shadow-sm"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                    {currentUser.email?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="absolute top-0 right-0 h-3 w-3 bg-emerald-500 border-2 border-background rounded-full"></div>
+              </div>
+              <div className="hidden sm:block text-left">
+                <p className="text-xs font-bold text-foreground leading-tight">
+                  {currentUser.user_metadata?.full_name || 'Administrador'}
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">
+                  {currentUser.email}
+                </p>
+              </div>
+            </>
+          )}
+          <div className="h-8 w-px bg-muted-foreground/20 mx-1 hidden sm:block"></div>
+          <div className="flex gap-2">
+             <Button variant="ghost" size="sm" onClick={loadRequests} title="Actualizar datos">
+               <RefreshCcw className={`h-4 w-4 ${isLoading && 'animate-spin'}`} />
+             </Button>
+             <Button 
+               variant="outline" 
+               size="sm" 
+               className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200"
+               onClick={handleSignOut}
+             >
+               <LogOut className="h-4 w-4 mr-2" />
+               <span className="hidden sm:inline">Cerrar Sesión</span>
+             </Button>
+          </div>
         </div>
       </div>
 
@@ -274,11 +342,28 @@ export default function AdminRequestsPage() {
                       </div>
                     )}
                     
-                    {req.status === 'approved' && (
-                       <Badge variant="secondary" className="flex items-center gap-2 py-1 px-3 bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
-                         <ExternalLink className="h-3 w-3" />
-                         Instancia Activa
-                       </Badge>
+                    {(req.status === 'approved' || req.status === 'rejected') && (
+                       <div className="flex items-center gap-2">
+                         {req.status === 'approved' ? (
+                           <Badge variant="secondary" className="flex items-center gap-2 py-1 px-3 bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
+                             <ExternalLink className="h-3 w-3" />
+                             Instancia Activa
+                           </Badge>
+                         ) : (
+                           <Button variant="ghost" size="sm" className="text-muted-foreground">
+                             <Edit className="h-4 w-4" />
+                           </Button>
+                         )}
+                         <Button 
+                           variant="ghost" 
+                           size="sm" 
+                           className="text-muted-foreground hover:text-rose-600 hover:bg-rose-50"
+                           onClick={() => handleDelete(req.id)}
+                           disabled={actionLoading === req.id}
+                         >
+                           <Trash className="h-4 w-4" />
+                         </Button>
+                       </div>
                     )}
                   </div>
                 </div>

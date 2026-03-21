@@ -1,11 +1,12 @@
 import { createClient } from '../client'
 import { IAuthService } from '@/core/application/ports/IAuthService'
 import { UserProfile } from '@/core/domain/entities/User'
+import { AuthResponse, Session } from '@supabase/supabase-js'
 
 export class SupabaseAuthService implements IAuthService {
   private supabase = createClient()
 
-  async getSession() {
+  async getSession(): Promise<Session | null> {
     const { data, error } = await this.supabase.auth.getSession()
     if (error) return null
     return data.session
@@ -39,6 +40,42 @@ export class SupabaseAuthService implements IAuthService {
     if (error) throw new Error(`Error al cerrar sesión: ${error.message}`)
   }
 
+  async signInWithPassword(identifier: string, password: string): Promise<AuthResponse['data']> {
+    let finalIdentifier = identifier
+    let isPhone = false
+
+    // 1. Intentar resolver como username si no parece email ni teléfono directo
+    if (!identifier.includes('@') && !identifier.startsWith('+') && isNaN(Number(identifier.slice(0, 5)))) {
+      const { data, error } = await (this.supabase as any).rpc('resolve_identifier_by_username', { 
+        p_username: identifier 
+      });
+      
+      const results = data as { email: string | null; phone: string | null }[] | null
+      
+      if (!error && results && results.length > 0) {
+        // PRIORIDADES: Preferimos Email (phantom o real), luego Phone
+        const email = results[0].email
+        const phone = results[0].phone
+        
+        finalIdentifier = email || phone || identifier
+        isPhone = !!(!email && phone)
+      }
+    } else {
+      // 2. Si parece teléfono directo (números), asegurar el '+'
+      isPhone = !identifier.includes('@')
+      if (isPhone && !finalIdentifier.startsWith('+')) {
+        const digits = finalIdentifier.replace(/\D/g, '')
+        finalIdentifier = digits.length === 10 ? `+52${digits}` : `+${digits}`
+      }
+    }
+
+    const { data, error } = await this.supabase.auth.signInWithPassword(
+      isPhone ? { phone: finalIdentifier, password } : { email: finalIdentifier, password }
+    )
+    if (error) throw error
+    return data
+  }
+
   async signInWithOtp(emailOrPhone: string): Promise<void> {
     const isEmail = emailOrPhone.includes('@');
     const { error } = await this.supabase.auth.signInWithOtp(
@@ -47,10 +84,10 @@ export class SupabaseAuthService implements IAuthService {
     if (error) throw new Error(`Error al solicitar el código: ${error.message}`);
   }
 
-  async verifyOtp(emailOrPhone: string, token: string): Promise<any> {
+  async verifyOtp(emailOrPhone: string, token: string): Promise<AuthResponse['data']> {
     const isEmail = emailOrPhone.includes('@');
     
-    // @ts-ignore - Some Supabase types strictly prefer the explicit union structure
+    // @ts-ignore
     const { data, error } = await this.supabase.auth.verifyOtp(
       isEmail 
         ? { email: emailOrPhone, token, type: 'magiclink' }
@@ -61,15 +98,30 @@ export class SupabaseAuthService implements IAuthService {
     return data;
   }
 
-  async inviteMember(emailOrPhone: string, schoolId: string, role: string, metadata?: any): Promise<any> {
-    // Invocamos la Edge Function para manejar la creación segura del usuario e invitación
+  async inviteMember(emailOrPhone: string, schoolId: string, role: string, metadata?: Record<string, unknown>): Promise<Record<string, unknown>> {
     const { data, error } = await this.supabase.functions.invoke('invite-user', {
       body: { emailOrPhone, role, schoolId, metadata },
     });
 
     if (error) throw new Error(`Error en la invitación: ${error.message}`);
-    if (data?.error) throw new Error(`Error de la función: ${data.error}`);
+    const result = data as Record<string, unknown>;
+    if (result?.error) throw new Error(`Error de la función: ${result.error}`);
 
-    return data;
+    return result;
+  }
+  
+  async signInWithGoogle(): Promise<void> {
+    const { error } = await this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback/`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    })
+
+    if (error) throw new Error(`Error al iniciar sesión con Google: ${error.message}`)
   }
 }
