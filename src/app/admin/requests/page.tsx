@@ -6,7 +6,7 @@ import { SupabaseAdminService } from '@/infrastructure/supabase/services/Supabas
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from "@/components/ui/badge"
-import { Loader2, CheckCircle, XCircle, MessageCircle, ExternalLink } from 'lucide-react'
+import { Loader2, CheckCircle, XCircle, MessageCircle, MessageSquareText, ExternalLink } from 'lucide-react'
 
 const adminService = new SupabaseAdminService()
 
@@ -100,12 +100,16 @@ export default function AdminRequestsPage() {
               <p><strong>Clave Temporal:</strong> {approvedData.credentials.tempPassword}</p>
               <p><strong>ID de Acceso:</strong> {approvedData.credentials.loginIdentifier}</p>
             </div>
-            <Button className="w-full bg-[#25D366] hover:bg-[#20ba5a]" asChild disabled={!approvedData.school.contact_phone}>
+            <Button 
+              className="w-full h-12 bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold shadow-lg" 
+              asChild 
+              disabled={!approvedData.school.contact_phone}
+            >
               <a 
-                href={`https://wa.me/${approvedData.school.contact_phone?.replace(/\D/g, '') || ''}?text=¡Hola! Tu escuela ha sido activada en Escuelitaz SPF.%0A%0AAccede aquí: ${approvedData.credentials.loginUrl}%0A%0AUsuario: ${approvedData.credentials.username}%0AClave: ${approvedData.credentials.tempPassword}%0A%0AAl ingresar, el sistema te pedirá cambiar tu clave.`} 
+                href={`https://wa.me/${approvedData.school.contact_phone?.replace(/\D/g, '') || ''}?text=${encodeURIComponent(`¡Hola! 👋 La escuela *${approvedData.school.name}* ha sido activada en Escuelitaz SPF.\n\nTus datos de acceso como Director son:\n👤 Usuario: ${approvedData.credentials.username}\n🔑 Contraseña: ${approvedData.credentials.tempPassword}\n\nIngresa aquí:\n${approvedData.credentials.loginUrl}\n\n(Deberás cambiar tu contraseña al entrar)`)}`} 
                 target="_blank"
               >
-                <MessageCircle className="mr-2 h-5 w-5" />
+                <MessageSquareText className="mr-2 h-5 w-5" />
                 {approvedData.school.contact_phone ? 'Enviar Credenciales por WhatsApp' : 'Sin teléfono de contacto'}
               </a>
             </Button>
