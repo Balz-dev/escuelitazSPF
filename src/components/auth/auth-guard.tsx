@@ -61,13 +61,13 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
         // Con sesión activa → redirigir si está en login, o verificar escuela si no
         if (currentSession) {
-          if (pathname === '/login') {
+          if (pathname === '/login' || pathname === '/') {
             const role = currentSession.user?.user_metadata?.role
             switch (role) {
               case 'director': router.push('/director'); break
               case 'docente': router.push('/docente'); break
               case 'superadmin': router.push('/admin/requests'); break
-              case 'padre': router.push('/padre'); break
+              case 'padre': router.push('/padres'); break
               default: router.push('/dashboard'); break
             }
             setIsChecked(true)
