@@ -72,12 +72,25 @@ export class SupabaseAdminService {
     }
   }
 
-  async rejectRequest(requestId: string) {
+  async rejectRequest(requestId: string, reason?: string) {
     const { error } = await this.supabase
       .from('school_onboarding_requests')
-      .update({ status: 'rejected' })
+      .update({ 
+        status: 'rejected',
+        rejection_reason: reason 
+      })
       .eq('id', requestId)
     
+    if (error) throw error
+    return { success: true }
+  }
+
+  async updateRequest(requestId: string, data: Partial<OnboardingRequestRow>) {
+    const { error } = await this.supabase
+      .from('school_onboarding_requests')
+      .update(data)
+      .eq('id', requestId)
+
     if (error) throw error
     return { success: true }
   }

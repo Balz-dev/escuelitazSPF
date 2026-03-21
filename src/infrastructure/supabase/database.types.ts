@@ -804,8 +804,12 @@ export type Database = {
           created_at: string | null
           director_name: string
           id: string
+          rejection_reason: string | null
+          requester_name: string | null
+          requester_role: string | null
           school_name: string
           status: string | null
+          updated_at: string | null
         }
         Insert: {
           contact_email?: string | null
@@ -813,8 +817,12 @@ export type Database = {
           created_at?: string | null
           director_name: string
           id?: string
+          rejection_reason?: string | null
+          requester_name?: string | null
+          requester_role?: string | null
           school_name: string
           status?: string | null
+          updated_at?: string | null
         }
         Update: {
           contact_email?: string | null
@@ -822,8 +830,12 @@ export type Database = {
           created_at?: string | null
           director_name?: string
           id?: string
+          rejection_reason?: string | null
+          requester_name?: string | null
+          requester_role?: string | null
           school_name?: string
           status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
