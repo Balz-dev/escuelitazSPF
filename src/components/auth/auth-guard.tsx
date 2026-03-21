@@ -12,8 +12,10 @@ const PUBLIC_PATHS = ['/', '/demo', '/login', '/register', '/enroll', '/set-pass
 
 function isPublicPath(pathname: string | null): boolean {
   if (!pathname) return false
+  // Eliminar trailing slash para normalizar comparaciones, excepto si es la raíz '/'
+  const normalized = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname
   return PUBLIC_PATHS.some(
-    (path) => pathname === path || pathname.startsWith('/demo/')
+    (path) => normalized === path || normalized.startsWith('/demo/')
   )
 }
 
@@ -51,6 +53,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
         setSession(currentSession)
 
         const onPublicPath = isPublicPath(pathname)
+        const normalizedPath = pathname?.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname
 
         // Sin sesión activa → redirigir al login si la ruta es protegida
         if (!currentSession && !onPublicPath) {
@@ -61,7 +64,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
         // Con sesión activa → redirigir si está en login, o verificar escuela si no
         if (currentSession) {
-          if (pathname === '/login' || pathname === '/') {
+          if (normalizedPath === '/login' || normalizedPath === '/register' || normalizedPath === '/') {
             const role = currentSession.user?.user_metadata?.role
             switch (role) {
               case 'director': router.push('/director'); break
