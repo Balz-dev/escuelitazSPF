@@ -1,5 +1,21 @@
 # Diario del Proyecto - Bitácora
 
+## 📅 2026-03-21
+**⏱️ Tiempo invertido:** 8 horas (aprox.)
+
+### ✅ Qué se logró
+- **Solución Final de Login por Usuario (Phantom Email)**: Se implementó una arquitectura de "correos fantasmas" técnicos (`[tel]@escuelitaz.local`) para permitir el acceso con solo Nombre de Usuario y Contraseña, eliminando la dependencia y el costo del proveedor de SMS/Teléfono de Supabase.
+- **Normalización E.164 Inteligente**: El sistema ahora formatea automáticamente los teléfonos a formato internacional (`+52`) en el registro de escuelas, aprobación administrativa y login, previniendo errores de autenticación 400.
+- **Mejoras en Panel Administrativo**: Se añadieron funcionalidades de **Eliminar** y **Editar** en `/admin/requests`, permitiendo la gestión y limpieza total de solicitudes de onboarding.
+- **Robustez de triggers y Edge Functions**: Refactorización del trigger `handle_new_user` y la función `invite-user` para manejar metadatos personalizados (`phone_original`, `username_display`) de forma sincronizada.
+- **Unificación y Despliegue**: Se realizó el merge de la rama de desarrollo a `main` y se empujaron todos los cambios verificados a `origin/main`.
+
+### 🚧 Pendientes para la siguiente sesión
+- Implementar la carga masiva de alumnos (CSV) desde el panel del Director ya activado.
+- Iniciar el refactor del Dashboard del Director con comparativas de asistencia y cobros.
+---
+
+
 ## 📅 2026-03-20 (Sesión 2)
 **⏱️ Tiempo invertido:** 3 horas
 

@@ -27,10 +27,10 @@
 - [x] **Protección de Rutas (PWA)**: Lógica en el cliente (Hooks/Layouts) para controlar el acceso y redirigir a `/login`.
 - [x] **Dominio de Usuario**: Entidades `UserProfile`, `SchoolMember` y `MemberRole` definidas.
 - [x] **Servicio de Auth (Port/Adapter)**: `IAuthService` y su implementación en Supabase (SPA) con tipado estricto.
-- [x] **UI de Login**: Formulario premium con soporte OTP y Password.
-- [x] **Módulo de Registro/Invitación**: Flujo jerárquico (SuperAdmin -> Director -> Docente -> Padre).
+- [x] **UI de Login Personalizada**: Soporte para inicio de sesión por **Nombre de Usuario** mediante la estrategia de "Phantom Email" (Email Fantasma) para evitar costos de SMS.
+- [x] **Normalización E.164**: Formateo automático de teléfonos en todo el flujo de onboarding.
 - [x] **SaaS Onboarding**: Página de `/register` para escuelas y periodo de prueba de Ciclo Escolar.
-- [x] **SuperAdmin Dashboard**: Ruta `/admin/requests` para activación instantánea, rechazo con motivo y re-activación de instituciones (Professional UI).
+- [x] **SuperAdmin Dashboard**: Gestión profesional de solicitudes con activación, rechazo con motivo, edición y eliminación total de registros.
 
 ---
 
