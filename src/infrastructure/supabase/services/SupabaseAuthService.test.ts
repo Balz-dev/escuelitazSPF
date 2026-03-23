@@ -86,4 +86,57 @@ describe('SupabaseAuthService', () => {
     })
     expect(result.tempPassword).toBe('pedro1234')
   })
+
+  it('llama a la edge function reset-password correctamente y devuelve la clave', async () => {
+    const mockResponse = {
+      data: {
+        success: true,
+        message: 'Contraseña reseteada exitosamente',
+        tempPassword: 'temp5678'
+      },
+      error: null
+    }
+
+    mockSupabase.functions.invoke.mockResolvedValueOnce(mockResponse)
+
+    const result = await authService.resetUserPassword('user-target-123')
+
+    expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('reset-password', {
+      body: {
+        targetUserId: 'user-target-123'
+      }
+    })
+    expect(result).toBe('temp5678')
+  })
+
+  it('lanza error si la edge function de resetear contraseña falla', async () => {
+    mockSupabase.functions.invoke.mockResolvedValueOnce({
+      data: null,
+      error: new Error('Internal function error')
+    })
+
+    await expect(authService.resetUserPassword('user-target-123')).rejects.toThrow('Error al resetear contraseña: Internal function error')
+  })
+
+  it('llama a la edge function request-password-reset exitosamente', async () => {
+    mockSupabase.functions.invoke.mockResolvedValueOnce({
+      data: { success: true, message: 'Notificado' },
+      error: null
+    })
+
+    await expect(authService.requestPasswordReset('mtejeda')).resolves.not.toThrow()
+
+    expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('request-password-reset', {
+      body: { identifier: 'mtejeda' }
+    })
+  })
+
+  it('lanza error si request-password-reset falla', async () => {
+    mockSupabase.functions.invoke.mockResolvedValueOnce({
+      data: null,
+      error: new Error('Network error')
+    })
+
+    await expect(authService.requestPasswordReset('mtejeda')).rejects.toThrow('Error al solicitar restablecimiento: Network error')
+  })
 })

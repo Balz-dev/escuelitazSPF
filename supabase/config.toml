@@ -3,9 +3,16 @@
 enabled = true
 verify_jwt = true
 import_map = "./functions/invite-user/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/invite-user/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/invite-user/*.html" ]
+
+# Función pública: cualquier usuario la puede llamar sin sesión para pedir su restablecimiento
+[functions.request-password-reset]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/request-password-reset/index.ts"
+
+# Función privada: solo Directors/Admins autenticados pueden generar contraseñas
+[functions.reset-password]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/reset-password/index.ts"

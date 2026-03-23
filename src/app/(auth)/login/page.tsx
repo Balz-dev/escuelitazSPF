@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
 import { User } from '@supabase/supabase-js'
+import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal'
 
 const authService = new SupabaseAuthService()
 
@@ -23,6 +24,8 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [otp, setOtp] = React.useState('')
+  
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = React.useState(false)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -187,7 +190,13 @@ export default function LoginPage() {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label htmlFor="password">Contraseña</Label>
-              <button type="button" className="text-xs text-primary hover:underline">¿La olvidaste?</button>
+              <button 
+                type="button" 
+                className="text-xs text-primary hover:underline"
+                onClick={() => setIsForgotPasswordOpen(true)}
+              >
+                ¿La olvidaste?
+              </button>
             </div>
             <Input 
               id="password" 
@@ -268,6 +277,12 @@ export default function LoginPage() {
       >
          <span className="mr-2">G</span> Google
       </Button>
+
+      <ForgotPasswordModal 
+        isOpen={isForgotPasswordOpen} 
+        onClose={() => setIsForgotPasswordOpen(false)} 
+        initialIdentifier={identifier}
+      />
     </AuthLayout>
   )
 }

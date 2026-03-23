@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/infrastructure/supabase/client'
 import { DirectorOnboarding } from '@/features/director/components/DirectorOnboarding'
+import { PasswordResetRequestsWidget } from '@/features/director/components/PasswordResetRequestsWidget'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Users, GraduationCap, Building2, BellRing, Settings, CalendarRange, MousePointerClick } from 'lucide-react'
@@ -158,6 +159,8 @@ export default function DirectorDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <PasswordResetRequestsWidget schoolId={schoolId} />
+
         {/* Widget: Módulo SPF */}
         <Card className="bg-linear-to-br from-emerald-50 to-emerald-100/50 border-emerald-200 shadow-sm">
           <CardHeader>

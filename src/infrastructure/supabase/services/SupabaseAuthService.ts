@@ -109,6 +109,32 @@ export class SupabaseAuthService implements IAuthService {
 
     return result;
   }
+
+  async resetUserPassword(targetUserId: string): Promise<string> {
+    const { data, error } = await this.supabase.functions.invoke('reset-password', {
+      body: { targetUserId },
+    });
+
+    if (error) throw new Error(`Error al resetear contraseña: ${error.message}`);
+    const result = data as Record<string, unknown>;
+    if (result?.error) throw new Error(`Error de la función: ${result.error}`);
+
+    if (typeof result?.tempPassword !== 'string') {
+      throw new Error('La función no devolvió una contraseña temporal válida');
+    }
+
+    return result.tempPassword;
+  }
+  
+  async requestPasswordReset(identifier: string): Promise<void> {
+    const { data, error } = await this.supabase.functions.invoke('request-password-reset', {
+      body: { identifier },
+    });
+
+    if (error) throw new Error(`Error al solicitar restablecimiento: ${error.message}`);
+    const result = data as Record<string, unknown>;
+    if (result?.error) throw new Error(`Error de la función: ${result.error}`);
+  }
   
   async signInWithGoogle(): Promise<void> {
     const { error } = await this.supabase.auth.signInWithOAuth({
@@ -117,8 +143,10 @@ export class SupabaseAuthService implements IAuthService {
         redirectTo: `${window.location.origin}/auth/callback/`,
         queryParams: {
           access_type: 'offline',
-          prompt: 'consent',
+          prompt: 'select_account',
         },
+        // Forzamos scopes de email y profile para evitar errores 400 en algunas cuentas
+        scopes: 'openid profile email'
       },
     })
 

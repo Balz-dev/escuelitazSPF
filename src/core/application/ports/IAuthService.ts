@@ -33,6 +33,17 @@ export interface IAuthService {
   inviteMember(emailOrPhone: string, schoolId: string, role: string, metadata?: Record<string, unknown>): Promise<Record<string, unknown>>
 
   /**
+   * Resetea la contraseña de un miembro específico a una contraseña temporal usando Edge Function
+   */
+  resetUserPassword(targetUserId: string): Promise<string>
+
+  /**
+   * Solicita el restablecimiento de contraseña para un usuario (notificando al Director)
+   */
+  requestPasswordReset(identifier: string): Promise<void>
+
+
+  /**
    * Inicia sesión con el proveedor de Google.
    */
   signInWithGoogle(): Promise<void>

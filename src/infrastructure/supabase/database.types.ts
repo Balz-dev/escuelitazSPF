@@ -731,6 +731,58 @@ export type Database = {
           },
         ]
       }
+      password_reset_requests: {
+        Row: {
+          created_at: string
+          id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          school_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          school_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          school_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "password_reset_requests_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "password_reset_requests_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "password_reset_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -739,6 +791,7 @@ export type Database = {
           id: string
           must_change_password: boolean
           phone: string | null
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -747,6 +800,7 @@ export type Database = {
           id: string
           must_change_password?: boolean
           phone?: string | null
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -755,6 +809,7 @@ export type Database = {
           id?: string
           must_change_password?: boolean
           phone?: string | null
+          username?: string | null
         }
         Relationships: []
       }
@@ -1288,6 +1343,18 @@ export type Database = {
     }
     Functions: {
       get_my_school_ids: { Args: never; Returns: string[] }
+      get_user_id_by_identifier: {
+        Args: { p_identifier: string }
+        Returns: string
+      }
+      is_superadmin: { Args: never; Returns: boolean }
+      resolve_identifier_by_username: {
+        Args: { p_username: string }
+        Returns: {
+          email: string
+          phone: string
+        }[]
+      }
     }
     Enums: {
       approval_status: "pendiente" | "aprobado" | "rechazado"
