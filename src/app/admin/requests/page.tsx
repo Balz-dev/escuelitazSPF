@@ -1,7 +1,6 @@
 "use client"
 
 import React from 'react'
-import { createClient } from '@/infrastructure/supabase/client'
 import { SupabaseAdminService } from '@/infrastructure/supabase/services/SupabaseAdminService'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,8 +8,11 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, CheckCircle, XCircle, MessageCircle, MessageSquareText, ExternalLink, RefreshCcw, Edit, Eye, Trash, Search, AlertCircle, LogOut } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { useRouter } from 'next/navigation'
+import { UserPasswordResetWidget } from '@/components/shared/UserPasswordResetWidget'
+import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
 
 const adminService = new SupabaseAdminService()
+const authService = new SupabaseAuthService()
 
 export default function AdminRequestsPage() {
   const [requests, setRequests] = React.useState<any[]>([])
@@ -23,7 +25,6 @@ export default function AdminRequestsPage() {
   const [searchTerm, setSearchTerm] = React.useState('')
   const [currentUser, setCurrentUser] = React.useState<any>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   const loadRequests = async () => {
     setIsLoading(true)
@@ -42,14 +43,14 @@ export default function AdminRequestsPage() {
     
     // Obtener datos del usuario actual
     const getUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await authService.getCurrentUser()
       setCurrentUser(user)
     }
     getUserData()
   }, [])
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    await authService.signOut()
     router.push('/login')
   }
 
@@ -141,9 +142,9 @@ export default function AdminRequestsPage() {
           {currentUser && (
             <>
               <div className="relative group">
-                {currentUser.user_metadata?.avatar_url ? (
+                {currentUser.avatarUrl ? (
                   <img 
-                    src={currentUser.user_metadata.avatar_url} 
+                    src={currentUser.avatarUrl} 
                     alt="Profile" 
                     className="h-10 w-10 rounded-full border-2 border-primary/20 group-hover:border-primary/50 transition-all shadow-sm"
                   />
@@ -156,7 +157,7 @@ export default function AdminRequestsPage() {
               </div>
               <div className="hidden sm:block text-left">
                 <p className="text-xs font-bold text-foreground leading-tight">
-                  {currentUser.user_metadata?.full_name || 'Administrador'}
+                  {currentUser.fullName || 'Administrador'}
                 </p>
                 <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">
                   {currentUser.email}
@@ -244,15 +245,27 @@ export default function AdminRequestsPage() {
         </Card>
       )}
 
-      {/* Filters */}
-      <div className="relative group">
-         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-         <Input 
-           placeholder="Buscar por escuela, director o teléfono..." 
-           className="pl-10 h-10 bg-background/50 border-muted-foreground/20 focus-visible:ring-primary"
-           value={searchTerm}
-           onChange={(e) => setSearchTerm(e.target.value)}
-         />
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-4">
+        {/* Filters */}
+        <div className="md:col-span-7 space-y-4">
+          <div className="relative group">
+             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+             <Input 
+               placeholder="Buscar por escuela, director o teléfono..." 
+               className="pl-10 h-10 bg-background/50 border-muted-foreground/20 focus-visible:ring-primary"
+               value={searchTerm}
+               onChange={(e) => setSearchTerm(e.target.value)}
+             />
+          </div>
+          <div className="text-sm text-muted-foreground bg-amber-500/10 p-3 rounded-lg border border-amber-500/20">
+            <strong>Nota:</strong> Las solicitudes aprobadas representan a las escuelas activas. Puedes rechazar o editar solicitudes desde esta lista.
+          </div>
+        </div>
+
+        {/* Reseteo Rápido */}
+        <div className="md:col-span-5">
+          <UserPasswordResetWidget targetRoleName="Director" />
+        </div>
       </div>
 
       <div className="grid gap-4">

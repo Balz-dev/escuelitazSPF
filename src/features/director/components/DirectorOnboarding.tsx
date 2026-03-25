@@ -78,6 +78,12 @@ export function DirectorOnboarding({ userId, schoolId, directorName, onComplete 
         if (logoPreview) URL.revokeObjectURL(logoPreview)
       }
 
+      // Marcar onboarding como completado
+      await supabase
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', userId)
+
       onComplete()
     } finally {
       setIsSubmitting(false)

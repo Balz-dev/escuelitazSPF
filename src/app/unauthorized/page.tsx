@@ -2,26 +2,27 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/infrastructure/supabase/client'
+import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
 import { Button } from '@/components/ui/button'
-import { User } from '@supabase/supabase-js'
+import { UserProfile } from '@/core/domain/entities/User'
 import { ShieldAlert, LogOut, MessageSquare, Clock } from 'lucide-react'
+
+const authService = new SupabaseAuthService()
 
 export default function UnauthorizedPage() {
   const router = useRouter()
-  const supabase = createClient()
-  const [user, setUser] = React.useState<User | null>(null)
+  const [user, setUser] = React.useState<UserProfile | null>(null)
 
   React.useEffect(() => {
     const getUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      const userData = await authService.getCurrentUser()
+      setUser(userData)
     }
     getUserData()
   }, [])
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    await authService.signOut()
     router.push('/login')
   }
 
@@ -42,7 +43,7 @@ export default function UnauthorizedPage() {
                 Acceso Pendiente
               </h1>
               <p className="text-gray-500 text-sm leading-relaxed">
-                Hola {user?.user_metadata?.full_name || user?.email}, tu cuenta ha sido creada exitosamente, pero <strong>aún no tienes acceso a ninguna escuela</strong>.
+                Hola {user?.fullName || user?.email}, tu cuenta ha sido creada exitosamente, pero <strong>aún no tienes acceso a ninguna escuela</strong>.
               </p>
             </div>
 

@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { SupabaseSchoolRepository } from '@/infrastructure/supabase/repositories/SupabaseSchoolRepository'
+import { SupabaseSchoolService } from '@/infrastructure/supabase/services/SupabaseSchoolService'
 import { StudentRegistrationForm } from '@/components/shared/StudentRegistrationForm'
 import { Loader2, AlertCircle } from 'lucide-react'
 import type { School } from '@/core/domain/entities/School'
 import { APP_CONFIG } from '@/config/constants'
 
-const schoolRepo = new SupabaseSchoolRepository()
+const schoolService = new SupabaseSchoolService()
 
 function RegisterContent() {
   const searchParams = useSearchParams()
@@ -26,8 +26,8 @@ function RegisterContent() {
       return
     }
 
-    schoolRepo.getByIdentifier(identifier).then(s => {
-      if (!s || !('is_active' in s)) {
+    schoolService.getSchoolByIdentifier(identifier).then(s => {
+      if (!s || !('id' in s)) {
         setNotFound(true)
       } else {
         setSchool(s)

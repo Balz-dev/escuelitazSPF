@@ -104,39 +104,28 @@ export default function LoginPage() {
     const user = userOverride || session?.user
     if (!user) return
 
-    const userMetadata = user.user_metadata
-    const appMetadata = user.app_metadata
-    
     // 2. Verificar si debe cambiar contraseña
-    if (userMetadata?.must_change_password) {
+    if (user.user_metadata?.must_change_password) {
       router.push('/set-password')
       return
     }
 
-    // 3. Redirigir según el rol
-    const role = (appMetadata?.role || userMetadata?.role) as string
+    // 3. Obtener rol y redirigir
+    const role = authService.getRoleFromUser(user)
     
     if (!role) {
       router.push('/unauthorized')
       return
     }
 
-    switch (role) {
-      case 'director':
-        router.push('/director')
-        break
-      case 'docente':
-        router.push('/docente')
-        break
-      case 'superadmin':
-        router.push('/admin/requests')
-        break;
-      case 'padre':
-        router.push('/padre')
-        break
-      default:
-        router.push('/dashboard') // Fallback genérico
+    const roleRoutes: Record<string, string> = {
+      'director': '/director',
+      'docente': '/docente',
+      'superadmin': '/admin/requests',
+      'padre': '/padre'
     }
+
+    router.push(roleRoutes[role] || '/dashboard')
   }
 
   return (

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Info, Contact2 } from 'lucide-react'
 
 interface ForgotPasswordModalProps {
   isOpen: boolean
@@ -20,96 +17,51 @@ interface ForgotPasswordModalProps {
   initialIdentifier?: string
 }
 
-const authService = new SupabaseAuthService()
-
-export function ForgotPasswordModal({ isOpen, onClose, initialIdentifier = '' }: ForgotPasswordModalProps) {
-  const [identifier, setIdentifier] = useState(initialIdentifier)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  // Reset state when modal opens/closes
-  React.useEffect(() => {
-    if (isOpen) {
-      setIdentifier(initialIdentifier)
-      setIsSuccess(false)
-      setError(null)
-    }
-  }, [isOpen, initialIdentifier])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!identifier.trim()) return
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      await authService.requestPasswordReset(identifier)
-      setIsSuccess(true)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al solicitar el restablecimiento')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
+export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Recuperar Contraseña</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Contact2 className="h-5 w-5 text-primary" />
+            Recuperar Contraseña
+          </DialogTitle>
           <DialogDescription>
-            Ingresa tu usuario, correo electrónico o teléfono celular.
+            Sigue las siguientes instrucciones según tu rol en la escuela para solicitar una nueva contraseña:
           </DialogDescription>
         </DialogHeader>
 
-        {isSuccess ? (
-          <div className="flex flex-col items-center justify-center space-y-4 py-6 text-center">
-            <CheckCircle2 className="h-12 w-12 text-primary" />
-            <div className="space-y-2">
-              <h3 className="font-semibold text-lg">Solicitud Enviada</h3>
-              <p className="text-sm text-muted-foreground">
-                Si el usuario existe y pertenece a una escuela, el director ha sido notificado. 
-                Por favor, contacta a la dirección de tu escuela para recibir tu contraseña temporal.
-              </p>
+        <div className="space-y-4 py-4 text-sm text-muted-foreground">
+          <div className="flex gap-3 bg-muted/50 p-3 rounded-lg border border-border/50">
+            <Info className="h-5 w-5 shrink-0 text-blue-500 mt-0.5" />
+            <div>
+              <strong className="text-foreground block mb-1">Si eres Padre de familia o Estudiante:</strong>
+              Ponte en contacto con tu Maestro/Maestra titular. Ellos tienen la facultad de resetear tu contraseña y enviártela por WhatsApp.
             </div>
-            <Button className="w-full" onClick={onClose} variant="outline">
-              Entendido
-            </Button>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="reset-identifier">Usuario, Correo o Teléfono</Label>
-              <Input
-                id="reset-identifier"
-                placeholder="ejemplo@correo.com o WhatsApp"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                disabled={isLoading}
-                autoFocus
-                required
-              />
-            </div>
 
-            {error && (
-              <div className="flex items-center space-x-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                <AlertCircle className="h-4 w-4" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="ghost" onClick={onClose} disabled={isLoading}>
-                Cancelar
-              </Button>
-              <Button type="submit" isLoading={isLoading} disabled={!identifier.trim()}>
-                Solicitar Acceso
-              </Button>
+          <div className="flex gap-3 bg-muted/50 p-3 rounded-lg border border-border/50">
+            <Info className="h-5 w-5 shrink-0 text-blue-500 mt-0.5" />
+            <div>
+              <strong className="text-foreground block mb-1">Si eres Docente:</strong>
+              Avisa directamente a tu Director(a). El director podrá restablecer tu acceso desde su panel de control administrativo.
             </div>
-          </form>
-        )}
+          </div>
+
+          <div className="flex gap-3 bg-muted/50 p-3 rounded-lg border border-border/50">
+            <Info className="h-5 w-5 shrink-0 text-blue-500 mt-0.5" />
+            <div>
+              <strong className="text-foreground block mb-1">Si eres Director(a):</strong>
+              Comunícate con el Administrador del sistema para verificar tu identidad y restaurar tu clave de acceso.
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <Button onClick={onClose} variant="default" className="w-full sm:w-auto">
+            Entendido
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   )

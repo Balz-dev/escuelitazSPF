@@ -2,12 +2,17 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/infrastructure/supabase/client'
+import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
 import { DirectorOnboarding } from '@/features/director/components/DirectorOnboarding'
 import { PasswordResetRequestsWidget } from '@/features/director/components/PasswordResetRequestsWidget'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, Users, GraduationCap, Building2, BellRing, Settings, CalendarRange, MousePointerClick } from 'lucide-react'
+
+import { SupabaseDirectorService } from '@/infrastructure/supabase/services/SupabaseDirectorService'
+
+const directorService = new SupabaseDirectorService()
+const authService = new SupabaseAuthService()
 
 export default function DirectorDashboard() {
   const router = useRouter()
@@ -22,62 +27,35 @@ export default function DirectorDashboard() {
 
   useEffect(() => {
     const init = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const profile = await authService.getCurrentUser()
 
-      if (user) {
-        setUserId(user.id)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, phone')
-          .eq('id', user.id)
-          .single()
-        
-        setDirectorName(profile?.full_name || '')
+      if (profile) {
+        setUserId(profile.id)
+        setDirectorName(profile.fullName || '')
 
-        const { data: membership } = await supabase
-          .from('school_members')
-          .select(`
-            school_id, 
-            school:schools(
-              name, 
-              cycle:school_cycles(name, is_active)
-            )
-          `)
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .limit(1)
-          .single()
+        // Obtener membresía activa
+        const membership = await directorService.getSchoolMembership(profile.id)
         
         if (membership) {
           setSchoolId(membership.school_id)
         }
 
-        if (!profile?.full_name || !membership) {
+        // Evaluar redirección de onboarding
+        if (!profile.onboardingCompleted || !membership) {
           setIsOnboarding(true)
         } else {
-          // Extraer info de escuela
-          const sname = (membership as any).school?.name || 'Mi Escuela'
-          const cycles = (membership as any).school?.cycle || []
-          const scycle = cycles.find((c:any) => c.is_active)?.name || 'Ciclo Activo'
-
-          
-          setSchoolInfo({ name: sname, cycle: scycle })
-
-          // Cargar estadísticas básicas (Mocked temporales o Count real)
-          const sid = membership.school_id
-          
-          const [ { count: alums }, { count: docs }, { count: sols } ] = await Promise.all([
-            supabase.from('school_members').select('*', { count: 'exact', head: true }).eq('school_id', sid).eq('role', 'padre'),
-            supabase.from('school_members').select('*', { count: 'exact', head: true }).eq('school_id', sid).eq('role', 'docente'),
-            supabase.from('student_preregistrations').select('*', { count: 'exact', head: true }).eq('school_id', sid).eq('status', 'pendiente')
-          ])
-
-          setStats({
-            alumnos: alums || 0,
-            docentes: docs || 0,
-            solicitudes: sols || 0
+          setSchoolInfo({ 
+            name: membership.school_name, 
+            cycle: 'Ciclo 2025-2026' // Placeholder MVP 
           })
+
+          // 4. Cargar estadísticas reales desde el servicio
+          try {
+            const result = await directorService.getStats(membership.school_id)
+            setStats(result)
+          } catch (e) {
+            console.error("Error al cargar estadísticas:", e)
+          }
         }
       }
       setIsLoading(false)

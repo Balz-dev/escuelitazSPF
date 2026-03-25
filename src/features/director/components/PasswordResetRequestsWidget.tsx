@@ -1,72 +1,63 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { createClient } from '@/infrastructure/supabase/client'
 import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
+import { SupabaseDirectorService } from '@/infrastructure/supabase/services/SupabaseDirectorService'
 import { Loader2, KeyRound, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Database } from '@/infrastructure/supabase/database.types'
 
 type PasswordResetRequest = Database['public']['Tables']['password_reset_requests']['Row'] & {
-  profiles?: { full_name: string | null; email: string | null; phone: string | null } | null
+  profiles?: { full_name: string | null; username: string | null; phone: string | null } | null
 }
 
 interface Props {
   schoolId: string
 }
 
+const directorService = new SupabaseDirectorService()
+const authService = new SupabaseAuthService()
+
 export function PasswordResetRequestsWidget({ schoolId }: Props) {
   const [requests, setRequests] = useState<PasswordResetRequest[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isResetting, setIsResetting] = useState<string | null>(null)
-  const [tempPasswordModal, setTempPasswordModal] = useState<{isOpen: boolean, password: string, userName: string}>({
-    isOpen: false,
-    password: '',
-    userName: ''
-  })
+  const [tempPasswordModal, setTempPasswordModal] = useState<{
+    isOpen: boolean,
+    userName: string,
+    tempPassword?: string
+  }>({ isOpen: false, userName: '' })
 
-  // We define it as a reusable function so we can refresh after resetting
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
-        const supabase = createClient()
-        // We join with profiles to show the user's name
-        const { data, error } = await supabase
-            .from('password_reset_requests')
-            .select(`
-                *,
-                profiles:user_id(full_name, email, phone)
-            `)
-            .eq('school_id', schoolId)
-            .eq('status', 'pending')
-            .order('created_at', { ascending: false })
-
-        if (error) throw error
-        setRequests(data as any)
-    } catch (e) {
-        console.error("Error fetching password reset requests:", e)
+      setIsLoading(true)
+      const data = await directorService.getPendingPasswordResetRequests(schoolId)
+      setRequests(data)
+    } catch (err) {
+      console.error('Error fetching password reset requests:', err)
+      alert('No se pudieron cargar las solicitudes de contraseña')
     } finally {
-        setIsLoading(false)
+      setIsLoading(false)
     }
-  }
+  }, [schoolId])
 
   useEffect(() => {
     if (!schoolId) return
     fetchRequests()
-  }, [schoolId])
+  }, [schoolId, fetchRequests])
 
   const handleResetPassword = async (request: PasswordResetRequest) => {
     setIsResetting(request.id)
     try {
-      const authService = new SupabaseAuthService()
       const tempPassword = await authService.resetUserPassword(request.user_id)
       
-      const userName = request.profiles?.full_name || request.profiles?.email || request.profiles?.phone || 'Usuario'
+      const userName = request.profiles?.full_name || request.profiles?.username || request.profiles?.phone || 'Usuario'
       
       setTempPasswordModal({
         isOpen: true,
-        password: tempPassword,
+        tempPassword: tempPassword,
         userName
       })
       
@@ -75,7 +66,6 @@ export function PasswordResetRequestsWidget({ schoolId }: Props) {
       
     } catch (e) {
       console.error(e)
-      // Provide an error fallback if there's no toast system
       alert(`Error al resetear contraseña: ${e instanceof Error ? e.message : 'Error desconocido'}`)
     } finally {
       setIsResetting(null)
@@ -116,7 +106,7 @@ export function PasswordResetRequestsWidget({ schoolId }: Props) {
             {requests.map(req => {
               const profile = req.profiles
               const name = profile?.full_name || 'Usuario Sin Nombre'
-              const contact = profile?.email || profile?.phone || 'Sin contacto'
+              const contact = profile?.username || profile?.phone || 'Sin contacto'
               const date = new Date(req.created_at).toLocaleDateString()
 
               return (
@@ -155,7 +145,7 @@ export function PasswordResetRequestsWidget({ schoolId }: Props) {
           
           <div className="bg-muted p-6 rounded-md my-4 flex justify-center items-center">
              <span className="text-4xl font-mono tracking-wider font-bold text-foreground">
-               {tempPasswordModal.password}
+               {tempPasswordModal.tempPassword}
              </span>
           </div>
 

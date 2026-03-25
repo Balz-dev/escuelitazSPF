@@ -1,11 +1,16 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
-import { createClient } from '@/infrastructure/supabase/client'
+import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
+import { SupabaseSchoolService } from '@/infrastructure/supabase/services/SupabaseSchoolService'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, MessageSquareText, Loader2, Users } from 'lucide-react'
 import { InvitationSender } from '@/components/shared/InvitationSender'
+import { UserPasswordResetWidget } from '@/components/shared/UserPasswordResetWidget'
+
+const authService = new SupabaseAuthService()
+const schoolService = new SupabaseSchoolService()
 
 export default function GestorDocentesPage() {
   const [schoolId, setSchoolId] = useState<string | null>(null)
@@ -22,21 +27,11 @@ export default function GestorDocentesPage() {
 
   useEffect(() => {
     const init = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await authService.getCurrentUser()
       if (user) {
         setUserId(user.id)
-        const { data: membership } = await supabase
-          .from('school_members')
-          .select('school_id')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .limit(1)
-          .single()
-        
-        if (membership) {
-          setSchoolId(membership.school_id)
-        }
+        const activeSchoolId = await schoolService.getActiveSchoolId(user.id)
+        setSchoolId(activeSchoolId)
       }
       setIsLoading(false)
     }
@@ -120,6 +115,9 @@ ${invitationData.loginUrl}
                 </CardContent>
               </Card>
           )}
+
+          {/* Widget de Reseteo de Contraseña */}
+          <UserPasswordResetWidget targetRoleName="Docente" />
         </div>
 
         {/* Lado derecho: Lista de Docentes */}

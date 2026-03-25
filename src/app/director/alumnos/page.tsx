@@ -1,12 +1,15 @@
-"use client"
-
 import React, { useEffect, useState } from 'react'
-import { createClient } from '@/infrastructure/supabase/client'
+import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
+import { SupabaseSchoolService } from '@/infrastructure/supabase/services/SupabaseSchoolService'
+import { SupabaseStudentService } from '@/infrastructure/supabase/services/SupabaseStudentService'
 import { Loader2, ClipboardCheck } from 'lucide-react'
 import { StudentRegistrationForm } from '@/components/shared/StudentRegistrationForm'
 import { ValidationQueue } from '@/components/shared/ValidationQueue'
-import { SupabasePreregistrationRepository } from '@/infrastructure/supabase/repositories/SupabasePreregistrationRepository'
 import type { StudentPreregistration } from '@/core/domain/entities/StudentPreregistration'
+
+const authService = new SupabaseAuthService()
+const schoolService = new SupabaseSchoolService()
+const studentService = new SupabaseStudentService()
 
 export default function GestorAlumnosPage() {
   const [schoolId, setSchoolId] = useState<string | null>(null)
@@ -18,25 +21,13 @@ export default function GestorAlumnosPage() {
   const [isQueueLoading, setIsQueueLoading] = useState(false)
   const [actionId, setActionId] = useState<string | null>(null)
 
-  const repo = new SupabasePreregistrationRepository()
-
   useEffect(() => {
     const init = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await authService.getCurrentUser()
       if (user) {
         setUserId(user.id)
-        const { data: membership } = await supabase
-          .from('school_members')
-          .select('school_id')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .limit(1)
-          .single()
-        
-        if (membership) {
-          setSchoolId(membership.school_id)
-        }
+        const activeSchoolId = await schoolService.getActiveSchoolId(user.id)
+        setSchoolId(activeSchoolId)
       }
       setIsLoading(false)
     }
@@ -53,7 +44,7 @@ export default function GestorAlumnosPage() {
     if (!schoolId) return
     setIsQueueLoading(true)
     try {
-      const data = await repo.getByStatus(schoolId, filter)
+      const data = await studentService.getPreregistrationsByStatus(schoolId, filter)
       setItems(data)
     } finally {
       setIsQueueLoading(false)
@@ -64,7 +55,7 @@ export default function GestorAlumnosPage() {
     if (!userId) return
     setActionId(item.id)
     try {
-      const updated = await repo.review(item.id, { status, reviewedBy: userId })
+      const updated = await studentService.reviewPreregistration(item.id, status, userId)
       setItems(prev => prev.map(i => i.id === item.id ? updated : i))
     } finally {
       setActionId(null)

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { SupabasePreregistrationRepository } from '@/infrastructure/supabase/repositories/SupabasePreregistrationRepository'
+import { SupabaseStudentService } from '@/infrastructure/supabase/services/SupabaseStudentService'
 import type { CreatePreregistrationDTO } from '@/core/domain/entities/StudentPreregistration'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -13,7 +13,7 @@ import { Database } from '@/infrastructure/supabase/database.types'
 
 type Role = Database['public']['Enums']['member_role']
 
-const repo = new SupabasePreregistrationRepository()
+const studentService = new SupabaseStudentService()
 
 interface StudentRegistrationFormProps {
   schoolId: string
@@ -98,7 +98,7 @@ export function StudentRegistrationForm({
         relationship,
         registeredBy,
       }
-      await repo.create(dto)
+      await studentService.createPreregistration(dto)
       setSuccessCount(c => c + 1)
 
       if (addAnother) {
