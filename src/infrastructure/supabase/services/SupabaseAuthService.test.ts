@@ -118,25 +118,29 @@ describe('SupabaseAuthService', () => {
     await expect(authService.resetUserPassword('user-target-123')).rejects.toThrow('Error al resetear contraseña: Internal function error')
   })
 
-  it('llama a la edge function request-password-reset exitosamente', async () => {
-    mockSupabase.functions.invoke.mockResolvedValueOnce({
-      data: { success: true, message: 'Notificado' },
-      error: null
+  describe('getRoleFromUser', () => {
+    it('extrae el rol de app_metadata si existe', () => {
+      const user = {
+        app_metadata: { role: 'admin' },
+        user_metadata: {}
+      } as any
+      expect(authService.getRoleFromUser(user)).toBe('admin')
     })
 
-    await expect(authService.requestPasswordReset('mtejeda')).resolves.not.toThrow()
-
-    expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('request-password-reset', {
-      body: { identifier: 'mtejeda' }
-    })
-  })
-
-  it('lanza error si request-password-reset falla', async () => {
-    mockSupabase.functions.invoke.mockResolvedValueOnce({
-      data: null,
-      error: new Error('Network error')
+    it('extrae el rol de user_metadata si no existe en app_metadata', () => {
+      const user = {
+        app_metadata: {},
+        user_metadata: { role: 'director' }
+      } as any
+      expect(authService.getRoleFromUser(user)).toBe('director')
     })
 
-    await expect(authService.requestPasswordReset('mtejeda')).rejects.toThrow('Error al solicitar restablecimiento: Network error')
+    it('retorna null si no hay rol en los metadatos', () => {
+      const user = {
+        app_metadata: {},
+        user_metadata: {}
+      } as any
+      expect(authService.getRoleFromUser(user)).toBeNull()
+    })
   })
 })

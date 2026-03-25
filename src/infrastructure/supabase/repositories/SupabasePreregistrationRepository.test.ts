@@ -2,9 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { SupabasePreregistrationRepository } from '@/infrastructure/supabase/repositories/SupabasePreregistrationRepository'
 
 // Mock del cliente Supabase
+const mockFrom = vi.hoisted(() => vi.fn())
 vi.mock('@/infrastructure/supabase/client', () => ({
   createClient: () => ({
-    from: vi.fn(),
+    from: mockFrom,
   }),
 }))
 
@@ -42,10 +43,8 @@ describe('SupabasePreregistrationRepository', () => {
       updated_at: '2026-03-19T12:00:00Z',
     }
 
-    const { createClient } = await import('@/infrastructure/supabase/client')
-    const mock = createClient()
     const chain = makeMockChain([rawRecord])
-    ;(mock.from as ReturnType<typeof vi.fn>).mockReturnValue(chain)
+    mockFrom.mockReturnValue(chain)
 
     const repo = new SupabasePreregistrationRepository()
     const results = await repo.getBySchool('school-uuid')
@@ -60,10 +59,8 @@ describe('SupabasePreregistrationRepository', () => {
   })
 
   it('create — lanza error si Supabase falla', async () => {
-    const { createClient } = await import('@/infrastructure/supabase/client')
-    const mock = createClient()
     const chain = makeMockChain(null, { message: 'insert error' })
-    ;(mock.from as ReturnType<typeof vi.fn>).mockReturnValue(chain)
+    mockFrom.mockReturnValue(chain)
 
     const repo = new SupabasePreregistrationRepository()
 

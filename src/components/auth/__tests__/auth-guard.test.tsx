@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { AuthGuard } from '../auth-guard'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/infrastructure/supabase/client'
@@ -60,7 +60,9 @@ describe('AuthGuard', () => {
     render(<AuthGuard><div>Contenido Protegido</div></AuthGuard>)
     
     // Simulamos evento sin sesión
-    await authCallback!('SIGNED_OUT', null)
+    await act(async () => {
+      if (authCallback) await authCallback('SIGNED_OUT', null)
+    })
 
     expect(mockPush).toHaveBeenCalledWith('/login')
   })
@@ -78,7 +80,9 @@ describe('AuthGuard', () => {
     
     // Sesión con rol null
     const mockSession = { user: { app_metadata: { role: null }, user_metadata: {} } }
-    await authCallback!('SIGNED_IN', mockSession)
+    await act(async () => {
+      if (authCallback) await authCallback('SIGNED_IN', mockSession)
+    })
 
     expect(mockPush).toHaveBeenCalledWith('/unauthorized')
   })
@@ -95,7 +99,9 @@ describe('AuthGuard', () => {
     render(<AuthGuard><div>Home</div></AuthGuard>)
     
     const mockSessionArr = { user: { app_metadata: { role: 'director' } } }
-    await authCallback!('SIGNED_IN', mockSessionArr)
+    await act(async () => {
+      if (authCallback) await authCallback('SIGNED_IN', mockSessionArr)
+    })
 
     expect(mockPush).toHaveBeenCalledWith('/director')
   })
@@ -112,7 +118,9 @@ describe('AuthGuard', () => {
     render(<AuthGuard><div>Login</div></AuthGuard>)
     
     const mockSession = { user: { app_metadata: { role: 'superadmin' } } }
-    await authCallback!('SIGNED_IN', mockSession)
+    await act(async () => {
+      if (authCallback) await authCallback('SIGNED_IN', mockSession)
+    })
 
     expect(mockPush).toHaveBeenCalledWith('/admin/requests')
   })

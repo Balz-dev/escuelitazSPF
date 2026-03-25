@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { SupabaseConvocatoriaRepository } from '@/infrastructure/supabase/repositories/SupabaseConvocatoriaRepository'
 
+const mockFrom = vi.hoisted(() => vi.fn())
 vi.mock('@/infrastructure/supabase/client', () => ({
   createClient: () => ({
-    from: vi.fn(),
+    from: mockFrom,
   }),
 }))
 
@@ -32,10 +33,8 @@ const makeMockChain = (data: unknown, error: unknown = null) => {
 
 describe('SupabaseConvocatoriaRepository', () => {
   it('mapToDomain — convierte correctamente los campos', async () => {
-    const { createClient } = await import('@/infrastructure/supabase/client')
-    const mock = createClient()
     const chain = makeMockChain([baseRaw])
-    ;(mock.from as ReturnType<typeof vi.fn>).mockReturnValue(chain)
+    mockFrom.mockReturnValue(chain)
 
     const repo = new SupabaseConvocatoriaRepository()
     const results = await repo.getBySchool('school-uuid')
@@ -51,10 +50,8 @@ describe('SupabaseConvocatoriaRepository', () => {
 
   it('publish — actualiza status a activa y publishedAt a now', async () => {
     const published = { ...baseRaw, status: 'activa', published_at: new Date().toISOString() }
-    const { createClient } = await import('@/infrastructure/supabase/client')
-    const mock = createClient()
     const chain = makeMockChain(published)
-    ;(mock.from as ReturnType<typeof vi.fn>).mockReturnValue(chain)
+    mockFrom.mockReturnValue(chain)
 
     const repo = new SupabaseConvocatoriaRepository()
     const result = await repo.publish('conv-uuid')
@@ -65,10 +62,8 @@ describe('SupabaseConvocatoriaRepository', () => {
 
   it('close — actualiza status a cerrada', async () => {
     const closed = { ...baseRaw, status: 'cerrada' }
-    const { createClient } = await import('@/infrastructure/supabase/client')
-    const mock = createClient()
     const chain = makeMockChain(closed)
-    ;(mock.from as ReturnType<typeof vi.fn>).mockReturnValue(chain)
+    mockFrom.mockReturnValue(chain)
 
     const repo = new SupabaseConvocatoriaRepository()
     const result = await repo.close('conv-uuid')

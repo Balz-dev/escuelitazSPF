@@ -2,17 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { useLocalProfile } from '@/features/director/hooks/useLocalProfile'
 
-const mockService = {
-  getProfile: vi.fn(),
-  saveProfile: vi.fn(),
-  saveAvatar: vi.fn(),
-  deleteAvatar: vi.fn(),
-  getAvatarObjectUrl: vi.fn(),
-}
+vi.mock('@/infrastructure/offline/LocalProfileService', () => {
+  return {
+    localProfileService: {
+      getProfile: vi.fn(),
+      saveProfile: vi.fn(),
+      saveAvatar: vi.fn(),
+      deleteAvatar: vi.fn(),
+      getAvatarObjectUrl: vi.fn(),
+    }
+  }
+})
 
-vi.mock('@/infrastructure/offline/LocalProfileService', () => ({
-  localProfileService: mockService,
-}))
+import { localProfileService } from '@/infrastructure/offline/LocalProfileService'
+const mockService = localProfileService as unknown as { [key: string]: ReturnType<typeof vi.fn> }
 
 describe('useLocalProfile', () => {
 
@@ -38,12 +41,12 @@ describe('useLocalProfile', () => {
         bio: 'Soy director',
         fullName: 'Juan Pérez',
       }
-      mockService.getProfile.mockResolvedValueOnce(mockProfile)
-      mockService.getAvatarObjectUrl.mockResolvedValueOnce(null)
+      mockService.getProfile.mockResolvedValue(mockProfile)
+      mockService.getAvatarObjectUrl.mockResolvedValue(null)
 
       const { result } = renderHook(() => useLocalProfile('user-123'))
 
-      await waitFor(() => !result.current.isLoading)
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
 
       expect(mockService.getProfile).toHaveBeenCalledWith('user-123')
       expect(result.current.profile).toEqual(mockProfile)
@@ -51,24 +54,24 @@ describe('useLocalProfile', () => {
 
     it('carga el avatar URL si existe', async () => {
       const mockProfile = { id: 'user-123', bio: 'Test' }
-      mockService.getProfile.mockResolvedValueOnce(mockProfile)
-      mockService.getAvatarObjectUrl.mockResolvedValueOnce('blob:avatar-url')
+      mockService.getProfile.mockResolvedValue(mockProfile)
+      mockService.getAvatarObjectUrl.mockResolvedValue('blob:avatar-url')
 
       const { result } = renderHook(() => useLocalProfile('user-123'))
 
-      await waitFor(() => !result.current.isLoading)
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
 
       expect(result.current.avatarUrl).toBe('blob:avatar-url')
     })
 
     it('inicia con avatar null si no hay avatar', async () => {
       const mockProfile = { id: 'user-123', bio: 'Test' }
-      mockService.getProfile.mockResolvedValueOnce(mockProfile)
-      mockService.getAvatarObjectUrl.mockResolvedValueOnce(null)
+      mockService.getProfile.mockResolvedValue(mockProfile)
+      mockService.getAvatarObjectUrl.mockResolvedValue(null)
 
       const { result } = renderHook(() => useLocalProfile('user-123'))
 
-      await waitFor(() => !result.current.isLoading)
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
 
       expect(result.current.avatarUrl).toBeNull()
     })
@@ -80,7 +83,11 @@ describe('useLocalProfile', () => {
 
       const { result } = renderHook(() => useLocalProfile('user-123'))
 
-      await waitFor(() => !result.current.isLoading)
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+      await act(async () => {
+        await result.current.saveProfile({})
+      })
 
       expect(global.URL.revokeObjectURL).toHaveBeenCalled()
     })
@@ -95,7 +102,7 @@ describe('useLocalProfile', () => {
 
       const { result } = renderHook(() => useLocalProfile('user-123'))
 
-      await waitFor(() => !result.current.isLoading)
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
 
       await act(async () => {
         await result.current.saveProfile({ bio: 'Nuevo bio' })
@@ -127,7 +134,7 @@ describe('useLocalProfile', () => {
 
       const { result } = renderHook(() => useLocalProfile('user-123'))
 
-      await waitFor(() => !result.current.isLoading)
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
 
       await act(async () => {
         await result.current.saveAvatar(mockFile)
@@ -158,7 +165,7 @@ describe('useLocalProfile', () => {
 
       const { result } = renderHook(() => useLocalProfile('user-123'))
 
-      await waitFor(() => !result.current.isLoading)
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
 
       await act(async () => {
         await result.current.deleteAvatar()
@@ -189,11 +196,11 @@ describe('useLocalProfile', () => {
 
       const { result, unmount } = renderHook(() => useLocalProfile('user-123'))
 
-      await waitFor(() => !result.current.isLoading)
+      await waitFor(() => expect(result.current.isLoading).toBe(false))
 
       unmount()
 
-      expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
+      expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:cleanup-url')
     })
   })
 })

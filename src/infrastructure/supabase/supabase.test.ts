@@ -1,7 +1,14 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { createClient as createBrowserClient } from './client'
 import { createClient as createServerClient } from './server'
 
+vi.mock('next/headers', () => ({
+  cookies: vi.fn().mockResolvedValue({
+    get: vi.fn(),
+    set: vi.fn(),
+    getAll: vi.fn().mockReturnValue([]),
+  }),
+}))
 describe('Supabase Client Infrastructure', () => {
   it('instancia el cliente del navegador con los tipos correctos', () => {
     const supabase = createBrowserClient()
