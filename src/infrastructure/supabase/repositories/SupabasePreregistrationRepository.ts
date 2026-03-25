@@ -8,8 +8,10 @@ import { Tables } from '../database.types'
 
 type PreregistrationRow = Tables<'student_preregistrations'>
 
+import { IPreregistrationRepository } from '@/core/application/repositories/IPreregistrationRepository'
+
 /** Repositorio de pre-registros de alumnos — soporta inserción pública (padres) y revisión interna */
-export class SupabasePreregistrationRepository {
+export class SupabasePreregistrationRepository implements IPreregistrationRepository {
   private supabase = createClient()
 
   /** Obtener todos los pre-registros de una escuela (requiere rol director/docente) */

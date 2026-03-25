@@ -1,9 +1,10 @@
 import { createClient } from '../client'
 import { Tables } from '../database.types'
+import { IAdminService, OnboardingRequest, ApproveRequestResult } from '@/core/application/ports/IAdminService'
 
 type OnboardingRequestRow = Tables<'school_onboarding_requests'>
 
-export class SupabaseAdminService {
+export class SupabaseAdminService implements IAdminService {
   private supabase = createClient()
 
   async getOnboardingRequests(): Promise<OnboardingRequestRow[]> {

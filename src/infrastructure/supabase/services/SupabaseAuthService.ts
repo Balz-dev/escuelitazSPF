@@ -28,9 +28,11 @@ export class SupabaseAuthService implements IAuthService {
     return {
       id: profile.id,
       fullName: profile.full_name,
+      email: user.email,
       avatarUrl: profile.avatar_url,
       phone: profile.phone,
       mustChangePassword: profile.must_change_password,
+      onboardingCompleted: !!profile.onboarding_completed,
       createdAt: new Date(profile.created_at),
     }
   }
@@ -125,16 +127,24 @@ export class SupabaseAuthService implements IAuthService {
 
     return result.tempPassword;
   }
-  
-  async requestPasswordReset(identifier: string): Promise<void> {
-    const { data, error } = await this.supabase.functions.invoke('request-password-reset', {
-      body: { identifier },
-    });
 
-    if (error) throw new Error(`Error al solicitar restablecimiento: ${error.message}`);
-    const result = data as Record<string, unknown>;
-    if (result?.error) throw new Error(`Error de la función: ${result.error}`);
+  async requestPasswordReset(identifier: string): Promise<string> {
+    const { data: { session } } = await this.supabase.auth.getSession()
+    if (!session) throw new Error('No hay una sesión activa.')
+
+    const { data, error } = await this.supabase.functions.invoke('reset-password', {
+      body: { identifier },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    })
+
+    if (error) throw new Error(`Error al resetear contraseña: ${error.message}`)
+    if (data?.error) throw new Error(data.error)
+    return data.tempPassword
   }
+  
+
   
   async signInWithGoogle(): Promise<void> {
     const { error } = await this.supabase.auth.signInWithOAuth({
@@ -151,5 +161,10 @@ export class SupabaseAuthService implements IAuthService {
     })
 
     if (error) throw new Error(`Error al iniciar sesión con Google: ${error.message}`)
+  }
+
+  getRoleFromUser(user: any): string | null {
+    if (!user) return null
+    return (user.app_metadata?.role || user.user_metadata?.role) as string || null
   }
 }

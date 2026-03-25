@@ -48,17 +48,22 @@ serve(async (req: any) => {
     // El "Usuario" para el mensaje es el nombre, pero para Supabase usamos el contacto (email/tel)
     // La "Clave" es nombre + 4 dígitos
     const tempPassword = `${firstName}${digits}`;
+
+    // ESTRATEGIA PHANTOM EMAIL:
+    // Si no es un email, creamos un email ficticio tipo "tel@escuelitaz.local"
+    // Esto permite que el usuario use su celular como Identificador pero Supabase lo vea como Email.
+    const phantomEmail = isEmail ? emailOrPhone : `${emailOrPhone.replace(/\D/g, '')}@escuelitaz.local`;
     
     // Crear el usuario con la contraseña dinámica
     const { data: userData, error: authError } = await supabaseClient.auth.admin.createUser({
-      email: isEmail ? emailOrPhone : undefined,
-      phone: !isEmail ? emailOrPhone : undefined,
+      email: phantomEmail,
+      // No mandamos phone a auth.users para evitar usar el provider de SMS de Supabase (que es de pago)
       password: tempPassword,
       email_confirm: true,
-      phone_confirm: true,
       user_metadata: { 
         full_name: metadata.full_name,
         username_display: firstName, // Guardamos el nombre "de usuario" en metadata
+        phone_original: isEmail ? undefined : emailOrPhone, // Guardamos el tel original para referencia
         must_change_password: true 
       },
       app_metadata: {
@@ -77,7 +82,31 @@ serve(async (req: any) => {
 
     const userId = userData.user.id;
 
-    // Insertar registro en user_invitations
+    // 2. Vincular usuario con la escuela
+    const { data: memberData, error: memberError } = await supabaseClient
+      .from('school_members')
+      .insert({
+         school_id: schoolId,
+         user_id: userId,
+         is_active: true
+      })
+      .select('id')
+      .single();
+
+    if (memberError) {
+      console.error('Error linking member:', memberError);
+      // No fallamos toda la función si esto falla, pero lo logueamos
+    } else if (memberData) {
+      const { error: roleError } = await supabaseClient
+        .from('member_roles')
+        .insert({
+           member_id: memberData.id,
+           role: role
+        });
+      if (roleError) console.error('Error assigning role:', roleError);
+    }
+
+    // 3. Insertar registro en user_invitations (para historial/seguimiento)
     await supabaseClient
       .from('user_invitations')
       .insert({

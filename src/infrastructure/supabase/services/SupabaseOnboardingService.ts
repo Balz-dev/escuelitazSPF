@@ -1,16 +1,10 @@
 import { createClient } from '../client'
+import { IOnboardingService, OnboardingAccessRequest } from '@/core/application/ports/IOnboardingService'
 
-export class SupabaseOnboardingService {
+export class SupabaseOnboardingService implements IOnboardingService {
   private supabase = createClient()
 
-  async requestAccess(data: {
-    schoolName: string;
-    directorName: string;
-    contactPhone: string;
-    contactEmail?: string;
-    requesterName?: string;
-    requesterRole?: string;
-  }): Promise<{ success: boolean }> {
+  async requestAccess(data: OnboardingAccessRequest): Promise<{ success: boolean }> {
     // Normalizar teléfono a E.164 (asumiendo +52 si son 10 dígitos)
     let finalPhone = data.contactPhone.replace(/\s+/g, '')
     if (finalPhone && !finalPhone.startsWith('+')) {
