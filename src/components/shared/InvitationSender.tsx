@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState } from 'react'
-import { createClient } from '@/infrastructure/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, Send } from 'lucide-react'
 import { Database } from '@/infrastructure/supabase/database.types'
+import { useInvitation } from '@/hooks/useInvitation'
 
 type Role = Database['public']['Enums']['member_role']
 type SubRole = Database['public']['Enums']['member_sub_role']
@@ -23,55 +23,46 @@ interface InvitationSenderProps {
  * Componente genérico para enviar invitaciones a nuevos miembros.
  */
 export function InvitationSender({ schoolId, invitedBy, allowedRoles, onSuccess }: InvitationSenderProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const { inviteMember, isInviting, error: inviteError } = useInvitation()
   const [formData, setFormData] = useState({
     fullName: '',
     emailOrPhone: '',
     role: allowedRoles[0] || 'docente',
     subRole: 'ninguno' as SubRole | 'ninguno'
   })
-  const [errorMsg, setErrorMsg] = useState('')
-
-  const supabase = createClient()
+  const [localError, setLocalError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setErrorMsg('')
+    setLocalError('')
 
     try {
-      // Llamar a la Edge Function
-      const { data, error } = await supabase.functions.invoke('invite-user', {
-        body: {
-          emailOrPhone: formData.emailOrPhone,
-          role: formData.role,
-          subRole: formData.subRole === 'ninguno' ? null : formData.subRole,
-          schoolId,
-          metadata: {
-            full_name: formData.fullName
-          }
+      const data = await inviteMember({
+        emailOrPhone: formData.emailOrPhone,
+        fullName: formData.fullName,
+        role: formData.role as any,
+        schoolId,
+        subRole: formData.subRole === 'ninguno' ? null : formData.subRole
+      })
+
+      if (data) {
+        setFormData({
+          fullName: '',
+          emailOrPhone: '',
+          role: allowedRoles[0] || 'docente',
+          subRole: 'ninguno'
+        })
+  
+        if (onSuccess) {
+          onSuccess(data)
         }
-      })
-
-      if (error) throw error
-
-      setFormData({
-        fullName: '',
-        emailOrPhone: '',
-        role: allowedRoles[0] || 'docente',
-        subRole: 'ninguno'
-      })
-
-      if (onSuccess && data) {
-        onSuccess(data)
       }
     } catch (err: any) {
       console.error(err)
-      setErrorMsg(err.message || 'Error al enviar invitación')
-    } finally {
-      setIsLoading(false)
     }
   }
+
+  const errorMsg = localError || inviteError
 
   return (
     <Card>
@@ -145,8 +136,8 @@ export function InvitationSender({ schoolId, invitedBy, allowedRoles, onSuccess 
 
           {errorMsg && <p className="text-sm text-destructive">{errorMsg}</p>}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+          <Button type="submit" className="w-full" disabled={isInviting}>
+            {isInviting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
             Generar Token e Invitar
           </Button>
         </form>

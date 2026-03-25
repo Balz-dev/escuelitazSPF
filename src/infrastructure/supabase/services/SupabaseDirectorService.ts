@@ -95,4 +95,29 @@ export class SupabaseDirectorService implements IDirectorService {
       school_name: (membership as any).school?.name || 'Mi Escuela'
     };
   }
+
+  async getTeachers(schoolId: string): Promise<any[]> {
+    const { data: members, error } = await this.supabase
+      .from('school_members')
+      .select(`
+        id,
+        is_active,
+        profiles:user_id(id, full_name, username, phone),
+        member_roles!inner(role)
+      `)
+      .eq('school_id', schoolId)
+      .eq('member_roles.role', 'docente')
+      .eq('is_active', true);
+
+    if (error) throw error;
+
+    return (members || []).map(m => ({
+      memberId: m.id,
+      userId: (m.profiles as any)?.id,
+      fullName: (m.profiles as any)?.full_name || 'Docente sin nombre',
+      username: (m.profiles as any)?.username,
+      phone: (m.profiles as any)?.phone,
+      isActive: m.is_active
+    }));
+  }
 }

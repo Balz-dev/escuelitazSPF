@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useEffect, useState } from 'react'
 import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
 import { SupabaseSchoolService } from '@/infrastructure/supabase/services/SupabaseSchoolService'
