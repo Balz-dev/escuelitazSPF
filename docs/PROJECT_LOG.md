@@ -1,5 +1,21 @@
 # Diario del Proyecto - Bitácora
 
+## 📅 2026-03-24
+**⏱️ Tiempo invertido:** 3 horas
+
+### ✅ Qué se logró
+- **Institucionalización de Reglas (Skills)**: Se crearon los agentes `clean-architecture-guardian` y `test-consistency-guardian` para asegurar la calidad de diseño y tests de forma automática.
+- **Implementación de Clean Architecture**: Desacoplamiento total de dependencias. Se definieron los puertos de aplicación e inyección (`IAdminService`, `IAuthService`, etc.) y se refactorizaron los servicios de Supabase y repositorios vinculados.
+- **Adaptación de Interfaces (UI)**: Se actualizaron componentes críticos (`AuthGuard`, Formularios, Tableros) para consumir métodos estandarizados desde los puertos en vez del cliente de infraestructura directo.
+- **Estabilización de Batería de Pruebas (100% Verde)**: Arreglo profundo de *mock hoisting* de Vitest, aserciones en el desmontaje de promesas React, y limpieza de advertencias `act(...)`. La suite no tiene fallos estables.
+- **Historial Git Atómico**: Se resguardó y consolidó el esfuerzo monumental de este refactor en 5 git commits estructurados lógicamente (infraestructura, tests, ui, core).
+- **Corrección Google OAuth**: (Resuelto temprano en la sesión) Se agregaron los ámbitos `select_account` explícitamente y `prompt` predeterminado para permitir bypass de error 400 de OAuth con cuentas múltiples.
+
+### 🚧 Pendientes para la siguiente sesión
+- Iniciar el despliegue y desarrollo de nuevas funcionalidades bajo el paraguas estricto de Clean Architecture.
+- Retomar la "carga masiva de alumnos (CSV)" estipulada en bitácoras pasadas.
+---
+
 ## 📅 2026-03-21
 **⏱️ Tiempo invertido:** 8 horas (aprox.)
 
