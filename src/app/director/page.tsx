@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { SupabaseAuthService } from '@/infrastructure/supabase/services/SupabaseAuthService'
 import { DirectorOnboarding } from '@/features/director/components/DirectorOnboarding'
@@ -8,11 +8,14 @@ import { PasswordResetRequestsWidget } from '@/features/director/components/Pass
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
-  Loader2, Users, GraduationCap, Building2, BellRing,
-  Settings, CalendarRange, MousePointerClick, RefreshCw, AlertCircle
+  Loader2, Users, GraduationCap, Building2, CalendarRange,
+  Settings, RefreshCw, AlertCircle
 } from 'lucide-react'
 import { SupabaseDirectorService } from '@/infrastructure/supabase/services/SupabaseDirectorService'
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics'
+import { MetricsCard } from '@/components/dashboard/MetricsCard'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
+import { useEntityPermissions } from '@/hooks/useEntityPermissions'
 
 const directorService = new SupabaseDirectorService()
 const authService = new SupabaseAuthService()
@@ -22,13 +25,27 @@ export default function DirectorDashboard() {
   const [isOnboarding, setIsOnboarding] = useState(false)
   const [isInitializing, setIsInitializing] = useState(true)
   const [schoolInfo, setSchoolInfo] = useState<{ name: string } | null>(null)
+  
   const [userId, setUserId] = useState<string>('')
   const [schoolId, setSchoolId] = useState<string>('')
   const [directorName, setDirectorName] = useState<string>('')
+  
+  // Para Seguridd Guardian
+  const [userRole, setUserRole] = useState<'director' | 'docente' | 'padre' | null>(null)
 
-  // ✅ Consumo de métricas a través del hook (Clean Architecture)
+  // ✅ Consumo de métricas (Clean Architecture)
   const { metrics, isLoading: metricsLoading, error: metricsError, refresh } = useDashboardMetrics(
     schoolId || null
+  )
+
+  // ✅ Permisos (Seguridad Guardian)
+  const studentPermissions = useMemo(() => 
+    useEntityPermissions('student', userRole), 
+    [userRole]
+  )
+  const teacherPermissions = useMemo(() => 
+    useEntityPermissions('docente', userRole), 
+    [userRole]
   )
 
   useEffect(() => {
@@ -37,6 +54,10 @@ export default function DirectorDashboard() {
       if (profile) {
         setUserId(profile.id)
         setDirectorName(profile.fullName || '')
+        // Para el Dashboard del Director, el rol principal es director.
+        // En un futuro se puede obtener mapeando las membresías reales.
+        setUserRole('director')
+
         const membership = await directorService.getSchoolMembership(profile.id)
         if (membership) {
           setSchoolId(membership.school_id)
@@ -78,12 +99,11 @@ export default function DirectorDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Centro de Control</h1>
-          <p className="text-muted-foreground flex items-center gap-2 mt-1">
-            <Building2 className="w-4 h-4" /> {schoolInfo?.name} • {activeCycle}
-          </p>
-        </div>
+        <DashboardHeader 
+          schoolName={schoolInfo?.name}
+          activeCycle={activeCycle}
+          directorName={directorName.split(' ')[0]} 
+        />
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" onClick={refresh} disabled={metricsLoading} aria-label="Actualizar métricas">
             <RefreshCw className={`w-4 h-4 ${metricsLoading ? 'animate-spin' : ''}`} />
@@ -102,67 +122,39 @@ export default function DirectorDashboard() {
         </div>
       )}
 
-      {/* KPIs */}
+      {/* KPIs - Usando MetricsCard modularizados */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card
-          className="hover:shadow-md transition-shadow cursor-pointer border-t-4 border-t-primary"
+        <MetricsCard 
+          title="Alumnos Registrados"
+          value={metrics?.totalStudents}
+          icon={GraduationCap}
+          isLoading={metricsLoading}
+          className="border-t-primary"
+          footerText={studentPermissions.canEdit ? "Ver Gestión de Alumnos" : "Ver Alumnos"}
           onClick={() => router.push('/director/alumnos')}
-        >
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Alumnos Registrados</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {metricsLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            ) : (
-              <div className="text-2xl font-bold">{metrics?.totalStudents ?? '—'}</div>
-            )}
-            <p className="text-xs text-primary-600 mt-1 flex items-center gap-1">
-              <MousePointerClick className="w-3 h-3" /> Ver Gestión de Alumnos
-            </p>
-          </CardContent>
-        </Card>
+        />
 
-        <Card
-          className="hover:shadow-md transition-shadow cursor-pointer border-t-4 border-t-blue-500"
+        <MetricsCard 
+          title="Plantilla Docente"
+          value={metrics?.totalTeachers}
+          icon={Users}
+          isLoading={metricsLoading}
+          className="border-t-blue-500"
+          valueClassName="text-blue-700"
+          footerText={teacherPermissions.canCreate ? "Ver Gestión de Docentes" : "Ver Docentes"}
           onClick={() => router.push('/director/docentes')}
-        >
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Plantilla Docente</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {metricsLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            ) : (
-              <div className="text-2xl font-bold">{metrics?.totalTeachers ?? '—'}</div>
-            )}
-            <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
-              <MousePointerClick className="w-3 h-3" /> Ver Gestión de Docentes
-            </p>
-          </CardContent>
-        </Card>
+        />
 
-        <Card
-          className="hover:shadow-md transition-shadow cursor-pointer border-t-4 border-t-orange-500"
+        <MetricsCard 
+          title="Solicitudes Pendientes"
+          value={metrics?.pendingRequests}
+          icon={RefreshCw}
+          isLoading={metricsLoading}
+          className="border-t-orange-500"
+          valueClassName="text-orange-600"
+          footerText="Revisar Pre-registros"
           onClick={() => router.push('/director/alumnos')}
-        >
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Solicitudes Pendientes</CardTitle>
-            <BellRing className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            {metricsLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            ) : (
-              <div className="text-2xl font-bold text-orange-600">{metrics?.pendingRequests ?? '—'}</div>
-            )}
-            <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
-              <MousePointerClick className="w-3 h-3" /> Revisar Pre-registros
-            </p>
-          </CardContent>
-        </Card>
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
