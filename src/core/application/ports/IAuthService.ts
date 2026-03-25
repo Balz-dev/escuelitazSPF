@@ -38,10 +38,13 @@ export interface IAuthService {
   resetUserPassword(targetUserId: string): Promise<string>
 
   /**
-   * Solicita el restablecimiento de contraseña para un usuario (notificando al Director)
+   * Solicita el restablecimiento de contraseña para un usuario mediante su identificador (correo, usuario o teléfono)
    */
-  requestPasswordReset(identifier: string): Promise<void>
-
+  requestPasswordReset(identifier: string): Promise<string>
+  /**
+   * Obtiene el rol del usuario desde sus metadatos
+   */
+  getRoleFromUser(user: any): string | null
 
   /**
    * Inicia sesión con el proveedor de Google.

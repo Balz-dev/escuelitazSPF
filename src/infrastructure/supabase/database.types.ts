@@ -735,6 +735,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          requester_role: string | null
           resolved_at: string | null
           resolved_by: string | null
           school_id: string
@@ -744,6 +745,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          requester_role?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           school_id: string
@@ -753,6 +755,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          requester_role?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           school_id?: string
@@ -790,6 +793,7 @@ export type Database = {
           full_name: string | null
           id: string
           must_change_password: boolean
+          onboarding_completed: boolean | null
           phone: string | null
           username: string | null
         }
@@ -799,6 +803,7 @@ export type Database = {
           full_name?: string | null
           id: string
           must_change_password?: boolean
+          onboarding_completed?: boolean | null
           phone?: string | null
           username?: string | null
         }
@@ -808,6 +813,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           must_change_password?: boolean
+          onboarding_completed?: boolean | null
           phone?: string | null
           username?: string | null
         }

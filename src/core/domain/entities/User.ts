@@ -2,9 +2,11 @@
 export interface UserProfile {
   id: string
   fullName?: string | null
+  email?: string | null
   avatarUrl?: string | null
   phone?: string | null
   mustChangePassword: boolean
+  onboardingCompleted?: boolean
   createdAt: Date
 }
 
