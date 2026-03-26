@@ -18,6 +18,8 @@ export function useInvitation() {
     role: 'docente' | 'padre' | 'director';
     schoolId: string;
     subRole?: string | null;
+    specialty?: string;
+    groupId?: string;
   }): Promise<InvitationCredentials | null> => {
     setIsInviting(true);
     setError(null);

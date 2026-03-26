@@ -14,4 +14,17 @@ export interface IDirectorService {
   getTeachers(schoolId: string): Promise<any[]>
   updateTeacher(memberId: string, data: any): Promise<void>
   deactivateTeacher(memberId: string): Promise<void>
+  getGroups(schoolId: string): Promise<any[]>
+  createGroup(schoolId: string, grade: string, name: string): Promise<void>
+  assignTeacherToGroup(memberId: string, groupId: string | null): Promise<void>
+
+  /**
+   * Inicia una suplantación temporal de un docente.
+   */
+  startSubstitution(originalMemberId: string, substituteMemberId: string): Promise<void>
+
+  /**
+   * Finaliza una suplantación temporal y restaura al docente original.
+   */
+  endSubstitution(originalMemberId: string): Promise<void>
 }

@@ -16,19 +16,22 @@ interface InvitationSenderProps {
   schoolId: string
   invitedBy: string
   allowedRoles: Role[]
+  groups?: any[] // Añadido para docentes
   onSuccess?: (credentials: { tempPassword: string; username: string }) => void
 }
 
 /**
  * Componente genérico para enviar invitaciones a nuevos miembros.
  */
-export function InvitationSender({ schoolId, invitedBy, allowedRoles, onSuccess }: InvitationSenderProps) {
+export function InvitationSender({ schoolId, invitedBy, allowedRoles, groups = [], onSuccess }: InvitationSenderProps) {
   const { inviteMember, isInviting, error: inviteError } = useInvitation()
   const [formData, setFormData] = useState({
     fullName: '',
     emailOrPhone: '',
     role: allowedRoles[0] || 'docente',
-    subRole: 'ninguno' as SubRole | 'ninguno'
+    subRole: 'ninguno' as SubRole | 'ninguno',
+    specialty: '', // Añadido
+    groupId: '' // Añadido
   })
   const [localError, setLocalError] = useState('')
 
@@ -42,7 +45,9 @@ export function InvitationSender({ schoolId, invitedBy, allowedRoles, onSuccess 
         fullName: formData.fullName,
         role: formData.role as any,
         schoolId,
-        subRole: formData.subRole === 'ninguno' ? null : formData.subRole
+        subRole: formData.subRole === 'ninguno' ? null : formData.subRole,
+        specialty: formData.role === 'docente' ? formData.specialty : undefined,
+        groupId: formData.role === 'docente' && formData.groupId !== '' ? formData.groupId : undefined
       })
 
       if (data) {
@@ -50,7 +55,9 @@ export function InvitationSender({ schoolId, invitedBy, allowedRoles, onSuccess 
           fullName: '',
           emailOrPhone: '',
           role: allowedRoles[0] || 'docente',
-          subRole: 'ninguno'
+          subRole: 'ninguno',
+          specialty: '',
+          groupId: ''
         })
   
         if (onSuccess) {
@@ -91,6 +98,39 @@ export function InvitationSender({ schoolId, invitedBy, allowedRoles, onSuccess 
               type="tel"
             />
           </div>
+
+          {formData.role === 'docente' && (
+            <>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Especialidad (Opcional)</label>
+                <Input 
+                  value={formData.specialty}
+                  onChange={e => setFormData(d => ({ ...d, specialty: e.target.value }))}
+                  placeholder="Ej. Educación Física, Inglés"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Grupo Asignado</label>
+                <Select 
+                  value={formData.groupId} 
+                  onValueChange={(v) => setFormData(d => ({ ...d, groupId: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar grupo (opcional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="undefined">Sin asignar</SelectItem>
+                    {groups.map(g => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.grade}° {g.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

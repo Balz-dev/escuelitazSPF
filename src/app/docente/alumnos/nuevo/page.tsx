@@ -46,10 +46,10 @@ export default function RegisterStudentPage() {
       })
 
       setInvitationData({
-        tempPassword: result.tempPassword,
-        username: result.username,
-        loginIdentifier: result.loginIdentifier,
-        loginUrl: `${result.loginUrl}?email=${encodeURIComponent(result.loginIdentifier)}`,
+        tempPassword: result.tempPassword as string,
+        username: result.username as string,
+        loginIdentifier: result.loginIdentifier as string,
+        loginUrl: `${result.loginUrl as string}?email=${encodeURIComponent(result.loginIdentifier as string)}`,
         parentName,
         studentName,
         parentContact

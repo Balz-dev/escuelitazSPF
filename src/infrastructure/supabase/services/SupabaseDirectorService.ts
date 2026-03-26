@@ -102,22 +102,166 @@ export class SupabaseDirectorService implements IDirectorService {
       .select(`
         id,
         is_active,
-        profiles:user_id(id, full_name, username, phone),
-        member_roles!inner(role)
+        substituted_by_id,
+        profiles:user_id(id, full_name, username, phone, specialty),
+        member_roles!inner(role, is_substitute),
+        groups:groups(id, grade, name)
       `)
       .eq('school_id', schoolId)
-      .eq('member_roles.role', 'docente')
-      .eq('is_active', true);
+      .eq('member_roles.role', 'docente');
 
     if (error) throw error;
 
-    return (members || []).map(m => ({
-      memberId: m.id,
-      userId: (m.profiles as any)?.id,
-      fullName: (m.profiles as any)?.full_name || 'Docente sin nombre',
-      username: (m.profiles as any)?.username,
-      phone: (m.profiles as any)?.phone,
-      isActive: m.is_active
-    }));
+    // Get student counts for groups
+    const { data: students, error: studentError } = await this.supabase
+      .from('students')
+      .select('group_id')
+      .eq('school_id', schoolId);
+
+    if (studentError) throw studentError;
+
+    return ((members as any[]) || []).map(m => {
+      const groupData = (m.groups as any)?.[0];
+      const studentCount = students ? (students as any[]).filter(s => s.group_id === groupData?.id).length : 0;
+      const profile = (m.profiles as any);
+      const role = (m.member_roles as any)?.[0];
+
+      return {
+        memberId: m.id,
+        userId: profile?.id,
+        fullName: profile?.full_name || 'Docente sin nombre',
+        username: profile?.username,
+        phone: profile?.phone,
+        specialty: profile?.specialty,
+        isActive: m.is_active,
+        isSubstitute: role?.is_substitute,
+        substitutedById: m.substituted_by_id,
+        group: groupData ? `${groupData.grade}° ${groupData.name}` : 'Sin grupo',
+        groupId: groupData?.id,
+        studentCount
+      };
+    });
+  }
+
+  async updateTeacher(memberId: string, data: any): Promise<void> {
+    if (data.fullName || data.phone || data.specialty) {
+      const { error: profileError } = await this.supabase
+        .from('profiles')
+        .update({
+          full_name: data.fullName,
+          phone: data.phone,
+          specialty: data.specialty
+        })
+        .eq('id', data.userId);
+
+      if (profileError) throw profileError;
+    }
+
+    if (data.is_active !== undefined) {
+      const { error: memberError } = await this.supabase
+        .from('school_members')
+        .update({ is_active: data.is_active })
+        .eq('id', memberId);
+      
+      if (memberError) throw memberError;
+    }
+  }
+
+  async deactivateTeacher(memberId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('school_members')
+      .update({ is_active: false })
+      .eq('id', memberId);
+    
+    if (error) throw error;
+  }
+
+  async getGroups(schoolId: string): Promise<any[]> {
+    const { data, error } = await this.supabase
+      .from('groups' as any)
+      .select('*')
+      .eq('school_id', schoolId);
+    if (error) throw error;
+    return data || [];
+  }
+
+  async createGroup(schoolId: string, grade: string, name: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('groups' as any)
+      .insert({ school_id: schoolId, grade, name });
+    if (error) throw error;
+  }
+
+  async assignTeacherToGroup(memberId: string, groupId: string | null): Promise<void> {
+    await this.supabase
+      .from('groups' as any)
+      .update({ teacher_id: null } as any)
+      .eq('teacher_id', memberId);
+    
+    if (groupId) {
+      const { error } = await this.supabase
+        .from('groups' as any)
+        .update({ teacher_id: memberId } as any)
+        .eq('id', groupId);
+      if (error) throw error;
+    }
+  }
+
+  async startSubstitution(originalMemberId: string, substituteMemberId: string): Promise<void> {
+    const { data: group } = await this.supabase
+      .from('groups' as any)
+      .select('id')
+      .eq('teacher_id', originalMemberId)
+      .single();
+
+    if (!group) throw new Error('El docente original no tiene un grupo asignado.');
+
+    await this.supabase
+      .from('school_members')
+      .update({ substituted_by_id: substituteMemberId } as any)
+      .eq('id', originalMemberId);
+
+    await this.supabase
+      .from('member_roles')
+      .update({ is_substitute: true } as any)
+      .eq('member_id', substituteMemberId);
+
+    await this.supabase
+      .from('groups' as any)
+      .update({ teacher_id: substituteMemberId } as any)
+      .eq('id', (group as any).id);
+  }
+
+  async endSubstitution(originalMemberId: string): Promise<void> {
+    const { data: member } = await this.supabase
+      .from('school_members')
+      .select('substituted_by_id')
+      .eq('id', originalMemberId)
+      .single();
+
+    if (!(member as any)?.substituted_by_id) return;
+
+    const { data: group } = await this.supabase
+      .from('groups' as any)
+      .select('id')
+      .eq('teacher_id', (member as any).substituted_by_id)
+      .single();
+
+    if (group) {
+      await this.supabase
+        .from('groups' as any)
+        .update({ teacher_id: originalMemberId } as any)
+        .eq('id', (group as any).id);
+    }
+
+    await this.supabase
+      .from('school_members')
+      .update({ substituted_by_id: null } as any)
+      .eq('id', originalMemberId);
+
+    await this.supabase
+      .from('member_roles')
+      .update({ is_substitute: false } as any)
+      .eq('member_id', (member as any).substituted_by_id);
   }
 }

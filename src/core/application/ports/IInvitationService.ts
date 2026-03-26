@@ -17,5 +17,7 @@ export interface IInvitationService {
     role: 'docente' | 'padre' | 'director';
     schoolId: string;
     subRole?: string | null;
+    groupId?: string | null;
+    specialty?: string | null;
   }): Promise<InvitationCredentials>;
 }

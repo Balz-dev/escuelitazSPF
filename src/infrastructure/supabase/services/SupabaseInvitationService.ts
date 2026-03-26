@@ -14,6 +14,8 @@ export class SupabaseInvitationService implements IInvitationService {
     role: 'docente' | 'padre' | 'director';
     schoolId: string;
     subRole?: string | null;
+    groupId?: string | null;
+    specialty?: string | null;
   }): Promise<InvitationCredentials> {
     const { data, error } = await this.supabase.functions.invoke('invite-user', {
       body: {
@@ -21,6 +23,8 @@ export class SupabaseInvitationService implements IInvitationService {
         role: params.role,
         subRole: params.subRole,
         schoolId: params.schoolId,
+        groupId: params.groupId,
+        specialty: params.specialty,
         metadata: {
           full_name: params.fullName
         }

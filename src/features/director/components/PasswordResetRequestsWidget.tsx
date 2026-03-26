@@ -7,11 +7,7 @@ import { SupabaseAuthService } from '@/infrastructure/supabase/services/Supabase
 import { SupabaseDirectorService } from '@/infrastructure/supabase/services/SupabaseDirectorService'
 import { Loader2, KeyRound, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Database } from '@/infrastructure/supabase/database.types'
-
-type PasswordResetRequest = Database['public']['Tables']['password_reset_requests']['Row'] & {
-  profiles?: { full_name: string | null; username: string | null; phone: string | null } | null
-}
+import { PasswordResetRequest } from '@/core/domain/entities/PasswordResetRequest'
 
 interface Props {
   schoolId: string
@@ -51,9 +47,9 @@ export function PasswordResetRequestsWidget({ schoolId }: Props) {
   const handleResetPassword = async (request: PasswordResetRequest) => {
     setIsResetting(request.id)
     try {
-      const tempPassword = await authService.resetUserPassword(request.user_id)
+      const tempPassword = await authService.resetUserPassword(request.userId)
       
-      const userName = request.profiles?.full_name || request.profiles?.username || request.profiles?.phone || 'Usuario'
+      const userName = request.profiles?.fullName || request.profiles?.username || request.profiles?.phone || 'Usuario'
       
       setTempPasswordModal({
         isOpen: true,
@@ -105,9 +101,9 @@ export function PasswordResetRequestsWidget({ schoolId }: Props) {
           <div className="divide-y divide-border">
             {requests.map(req => {
               const profile = req.profiles
-              const name = profile?.full_name || 'Usuario Sin Nombre'
+              const name = profile?.fullName || 'Usuario Sin Nombre'
               const contact = profile?.username || profile?.phone || 'Sin contacto'
-              const date = new Date(req.created_at).toLocaleDateString()
+              const date = new Date(req.createdAt).toLocaleDateString()
 
               return (
                 <div key={req.id} className="p-4 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center hover:bg-muted/50 transition-colors">

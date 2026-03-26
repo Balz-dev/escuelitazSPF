@@ -32,7 +32,7 @@ serve(async (req: any) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { emailOrPhone, role, schoolId, metadata = {} } = await req.json();
+    const { emailOrPhone, role, schoolId, groupId, specialty, metadata = {} } = await req.json();
 
     if (!emailOrPhone || !role || !schoolId || !metadata.full_name) {
       return new Response(
@@ -64,6 +64,7 @@ serve(async (req: any) => {
         full_name: metadata.full_name,
         username_display: firstName, // Guardamos el nombre "de usuario" en metadata
         phone_original: isEmail ? undefined : emailOrPhone, // Guardamos el tel original para referencia
+        specialty: specialty, // Guardamos especialidad si existe
         must_change_password: true 
       },
       app_metadata: {
@@ -103,7 +104,16 @@ serve(async (req: any) => {
            member_id: memberData.id,
            role: role
         });
-      if (roleError) console.error('Error assigning role:', roleError);
+      if (roleError) {
+        console.error('Error assigning role:', roleError);
+      } else if (groupId) {
+        // 2.5 Vincular con el grupo si se proporcionó uno
+        const { error: groupError } = await supabaseClient
+          .from('groups')
+          .update({ teacher_id: memberData.id })
+          .eq('id', groupId);
+        if (groupError) console.error('Error assigning teacher to group:', groupError);
+      }
     }
 
     // 3. Insertar registro en user_invitations (para historial/seguimiento)
