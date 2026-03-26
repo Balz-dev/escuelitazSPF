@@ -1,6 +1,9 @@
 import { createClient } from '../client'
 import { IDirectorService, DirectorDashboardStats } from '@/core/application/ports/IDirectorService'
 import { PasswordResetRequest } from '@/core/domain/entities/PasswordResetRequest'
+import { Teacher } from '@/core/domain/entities/Teacher'
+import { Group } from '@/core/domain/entities/Group'
+import { UpdateTeacherDto } from '@/core/domain/dtos/UpdateTeacherDto'
 
 export class SupabaseDirectorService implements IDirectorService {
   private supabase = createClient()
@@ -48,7 +51,7 @@ export class SupabaseDirectorService implements IDirectorService {
 
     if (error) throw error;
     
-    return (data || []).map(row => ({
+    return (data || []).map((row: any) => ({
       id: row.id,
       userId: row.user_id,
       schoolId: row.school_id,
@@ -96,7 +99,7 @@ export class SupabaseDirectorService implements IDirectorService {
     };
   }
 
-  async getTeachers(schoolId: string): Promise<any[]> {
+  async getTeachers(schoolId: string): Promise<Teacher[]> {
     const { data: members, error } = await this.supabase
       .from('school_members')
       .select(`
@@ -143,7 +146,7 @@ export class SupabaseDirectorService implements IDirectorService {
     });
   }
 
-  async updateTeacher(memberId: string, data: any): Promise<void> {
+  async updateTeacher(memberId: string, data: UpdateTeacherDto): Promise<void> {
     if (data.fullName || data.phone || data.specialty) {
       const { error: profileError } = await this.supabase
         .from('profiles')
@@ -152,15 +155,15 @@ export class SupabaseDirectorService implements IDirectorService {
           phone: data.phone,
           specialty: data.specialty
         })
-        .eq('id', data.userId);
+        .eq('id', data.userId as string);
 
       if (profileError) throw profileError;
     }
 
-    if (data.is_active !== undefined) {
+    if (data.isActive !== undefined) {
       const { error: memberError } = await this.supabase
         .from('school_members')
-        .update({ is_active: data.is_active })
+        .update({ is_active: data.isActive })
         .eq('id', memberId);
       
       if (memberError) throw memberError;
@@ -176,20 +179,23 @@ export class SupabaseDirectorService implements IDirectorService {
     if (error) throw error;
   }
 
-  async getGroups(schoolId: string): Promise<any[]> {
+  async getGroups(schoolId: string): Promise<Group[]> {
     const { data, error } = await this.supabase
       .from('groups' as any)
       .select('*')
       .eq('school_id', schoolId);
     if (error) throw error;
-    return data || [];
+    return (data as unknown) as Group[];
   }
 
-  async createGroup(schoolId: string, grade: string, name: string): Promise<void> {
-    const { error } = await this.supabase
+  async createGroup(schoolId: string, grade: string, name: string): Promise<Group> {
+    const { data, error } = await this.supabase
       .from('groups' as any)
-      .insert({ school_id: schoolId, grade, name });
+      .insert({ school_id: schoolId, grade, name })
+      .select('*')
+      .single();
     if (error) throw error;
+    return (data as unknown) as Group;
   }
 
   async assignTeacherToGroup(memberId: string, groupId: string | null): Promise<void> {

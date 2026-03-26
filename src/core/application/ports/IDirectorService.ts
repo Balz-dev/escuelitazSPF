@@ -1,4 +1,7 @@
 import { PasswordResetRequest } from '@/core/domain/entities/PasswordResetRequest'
+import { Teacher } from '@/core/domain/entities/Teacher'
+import { Group } from '@/core/domain/entities/Group'
+import { UpdateTeacherDto } from '@/core/domain/dtos/UpdateTeacherDto'
 
 export interface DirectorDashboardStats {
   alumnos: number
@@ -11,11 +14,11 @@ export interface IDirectorService {
   getPendingPasswordResetRequests(schoolId: string): Promise<PasswordResetRequest[]>
   getDirectorProfile(userId: string): Promise<{ full_name: string | null, onboarding_completed: boolean } | null>
   getSchoolMembership(userId: string): Promise<{ school_id: string, school_name: string } | null>
-  getTeachers(schoolId: string): Promise<any[]>
-  updateTeacher(memberId: string, data: any): Promise<void>
+  getTeachers(schoolId: string): Promise<Teacher[]>
+  updateTeacher(memberId: string, data: UpdateTeacherDto): Promise<void>
   deactivateTeacher(memberId: string): Promise<void>
-  getGroups(schoolId: string): Promise<any[]>
-  createGroup(schoolId: string, grade: string, name: string): Promise<void>
+  getGroups(schoolId: string): Promise<Group[]>
+  createGroup(schoolId: string, grade: string, name: string): Promise<Group>
   assignTeacherToGroup(memberId: string, groupId: string | null): Promise<void>
 
   /**

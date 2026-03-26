@@ -16,6 +16,7 @@ export interface IInvitationService {
     fullName: string;
     role: 'docente' | 'padre' | 'director';
     schoolId: string;
+    invitedBy: string;
     subRole?: string | null;
     groupId?: string | null;
     specialty?: string | null;

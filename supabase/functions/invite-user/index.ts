@@ -32,7 +32,7 @@ serve(async (req: any) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { emailOrPhone, role, schoolId, groupId, specialty, metadata = {} } = await req.json();
+    const { emailOrPhone, role, subRole, schoolId, invitedBy, groupId, specialty, metadata = {} } = await req.json();
 
     if (!emailOrPhone || !role || !schoolId || !metadata.full_name) {
       return new Response(
@@ -123,7 +123,9 @@ serve(async (req: any) => {
          email: isEmail ? emailOrPhone : null,
          phone: isEmail ? null : emailOrPhone,
          role: role,
+         sub_role: subRole,
          school_id: schoolId,
+         invited_by: invitedBy,
          status: 'pending'
       });
 

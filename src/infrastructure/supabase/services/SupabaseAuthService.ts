@@ -5,6 +5,7 @@ import { AuthResponse, Session } from '@supabase/supabase-js'
 
 export class SupabaseAuthService implements IAuthService {
   private supabase = createClient()
+  private static currentUserPromise: Promise<UserProfile | null> | null = null
 
   async getSession(): Promise<Session | null> {
     const { data, error } = await this.supabase.auth.getSession()
@@ -13,28 +14,41 @@ export class SupabaseAuthService implements IAuthService {
   }
 
   async getCurrentUser(): Promise<UserProfile | null> {
-    const { data: { user }, error } = await this.supabase.auth.getUser()
-    if (error || !user) return null
+    if (SupabaseAuthService.currentUserPromise) return SupabaseAuthService.currentUserPromise
 
-    // Buscamos el perfil asociado en la tabla pública
-    const { data: profile, error: profileError } = await this.supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
+    SupabaseAuthService.currentUserPromise = (async () => {
+      try {
+        const { data: { user }, error } = await this.supabase.auth.getUser()
+        if (error || !user) return null
 
-    if (profileError || !profile) return null
+        // Buscamos el perfil asociado en la tabla pública
+        const { data: profile, error: profileError } = await this.supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
 
-    return {
-      id: profile.id,
-      fullName: profile.full_name,
-      email: user.email,
-      avatarUrl: profile.avatar_url,
-      phone: profile.phone,
-      mustChangePassword: profile.must_change_password,
-      onboardingCompleted: !!profile.onboarding_completed,
-      createdAt: new Date(profile.created_at),
-    }
+        if (profileError || !profile) return null
+
+        return {
+          id: profile.id,
+          fullName: profile.full_name,
+          email: user.email,
+          avatarUrl: profile.avatar_url,
+          phone: profile.phone,
+          mustChangePassword: profile.must_change_password,
+          onboardingCompleted: !!profile.onboarding_completed,
+          createdAt: new Date(profile.created_at),
+        }
+      } finally {
+        // Limpiamos la promesa después de un tiempo corto
+        setTimeout(() => {
+          SupabaseAuthService.currentUserPromise = null
+        }, 1000)
+      }
+    })()
+
+    return SupabaseAuthService.currentUserPromise
   }
 
   async signOut(): Promise<void> {

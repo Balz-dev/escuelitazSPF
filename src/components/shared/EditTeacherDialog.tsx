@@ -8,23 +8,26 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SupabaseDirectorService } from '@/infrastructure/supabase/services/SupabaseDirectorService'
 import { Loader2 } from 'lucide-react'
+import { Teacher } from '@/core/domain/entities/Teacher'
+import { Group } from '@/core/domain/entities/Group'
 
 const directorService = new SupabaseDirectorService()
 
 interface EditTeacherDialogProps {
-  teacher: any | null
+  teacher: Teacher | null
   schoolId: string
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
+  groups?: Group[]
 }
 
-export function EditTeacherDialog({ teacher, schoolId, open, onOpenChange, onSuccess }: EditTeacherDialogProps) {
+export function EditTeacherDialog({ teacher, schoolId, open, onOpenChange, onSuccess, groups: initialGroups }: EditTeacherDialogProps) {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [specialty, setSpecialty] = useState('') // Añadido
   const [groupId, setGroupId] = useState<string>('none')
-  const [groups, setGroups] = useState<any[]>([])
+  const [groups, setGroups] = useState<Group[]>(initialGroups || [])
   const [isSaving, setIsSaving] = useState(false)
   const [isLoadingGroups, setIsLoadingGroups] = useState(false)
 
@@ -34,9 +37,13 @@ export function EditTeacherDialog({ teacher, schoolId, open, onOpenChange, onSuc
       setPhone(teacher.phone || '')
       setSpecialty(teacher.specialty || '') // Añadido
       setGroupId(teacher.groupId || 'none')
-      loadGroups()
+      if (!initialGroups) {
+        loadGroups()
+      } else {
+        setGroups(initialGroups)
+      }
     }
-  }, [teacher])
+  }, [teacher, initialGroups])
 
   const loadGroups = async () => {
     setIsLoadingGroups(true)

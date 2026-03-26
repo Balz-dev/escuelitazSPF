@@ -1,5 +1,21 @@
 # Diario del Proyecto - Bitácora
 
+## 📅 2026-03-26
+**⏱️ Tiempo invertido:** 40 minutos
+
+### ✅ Qué se logró
+- **Corrección de Tipos en Invitaciones**: Se actualizó el puerto `IInvitationService` y el servicio `SupabaseInvitationService` para incluir el campo obligatorio `invitedBy`, sincronizando la capa de dominio con la infraestructura y la UI (`InvitationSender.tsx`).
+- **Estabilización de Mocks de Supabase**: Refactorización de los *helpers* de testing en `SupabaseDashboardRepository.test.ts` para soportar el encadenamiento de métodos (`.eq().eq()`) y resolución asíncrona compatible con `Promise.all`.
+- **Eliminación de Deuda Técnica en Tests**: Consolidación de pruebas duplicadas. Se eliminó la carpeta redundante `src/infrastructure/supabase/services/__tests__` y se unificó la lógica en un solo archivo de pruebas mantenible.
+- **Independencia de Estado en Pruebas**: Implementación de limpieza de promesas estáticas en `SupabaseAuthService` entre ejecuciones de Vitest, garantizando que los tests sean deterministas y no compartan estado.
+- **Batería de Pruebas al 100% (Verde 🟢)**: Verificación final de todos los servicios y repositorios, asegurando que los 128 tests del proyecto pasen exitosamente y cumplan con los estándares de **Clean Architecture**.
+
+### 🚧 Pendientes para la siguiente sesión
+- Finalizar el sistema avanzado de registro de docentes (especialidad y grupos).
+- Implementar la carga masiva de alumnos (CSV) utilizando los nuevos patrones de servicio.
+---
+
+
 ## 📅 2026-03-25
 **⏱️ Tiempo invertido:** 2 horas y 5 minutos
 

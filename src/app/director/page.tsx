@@ -16,6 +16,7 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics'
 import { MetricsCard } from '@/components/dashboard/MetricsCard'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { useEntityPermissions } from '@/hooks/useEntityPermissions'
+import { TeachersList } from '@/features/director/components/TeachersList'
 
 const directorService = new SupabaseDirectorService()
 const authService = new SupabaseAuthService()
@@ -157,69 +158,71 @@ export default function DirectorDashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <PasswordResetRequestsWidget schoolId={schoolId} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-7 xl:col-span-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <PasswordResetRequestsWidget schoolId={schoolId} />
 
-        {/* Widget: Módulo SPF */}
-        <Card className="bg-linear-to-br from-emerald-50 to-emerald-100/50 border-emerald-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-emerald-800 flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
-              Resumen Sociedad de Padres (SPF)
-            </CardTitle>
-            <CardDescription className="text-emerald-700/80">
-              Vista general financiera y de comunicaciones.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-white/80 p-4 rounded-md shadow-sm border border-emerald-100">
-              <h3 className="text-sm font-semibold text-emerald-900 mb-2">Fondo Actual (Estimado)</h3>
-              <p className="text-3xl font-bold text-emerald-700">
-                $12,500.00 <span className="text-sm font-normal text-muted-foreground">MXN</span>
-              </p>
-              <p className="text-xs text-emerald-600 mt-1">+ Ingresos recientes: $1,200.00 esta semana</p>
-            </div>
-            <div className="bg-white/80 p-4 rounded-md shadow-sm border border-emerald-100">
-              <h3 className="text-sm font-semibold text-emerald-900 mb-2 flex items-center gap-2">
-                <CalendarRange className="w-4 h-4" /> Próxima Convocatoria
-              </h3>
-              <p className="font-medium">Asamblea General Ordinaria</p>
-              <p className="text-sm text-muted-foreground">Viernes, 15 de Octubre - 10:00 AM</p>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full border-emerald-300 text-emerald-800 hover:bg-emerald-100/50"
-              onClick={() => router.push('/spf')}
-            >
-              Ir al Módulo SPF Completo
-            </Button>
-          </CardContent>
-        </Card>
+            {/* Widget: Módulo SPF */}
+            <Card className="bg-linear-to-br from-emerald-50 to-emerald-100/50 border-emerald-200 shadow-sm h-fit">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-emerald-800 flex items-center gap-2 text-base">
+                  <Building2 className="w-4 h-4" />
+                  Resumen Padres (SPF)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="bg-white/80 p-3 rounded-md shadow-sm border border-emerald-100">
+                  <p className="text-xs font-semibold text-emerald-900 mb-1">Fondo Actual</p>
+                  <p className="text-xl font-bold text-emerald-700">$12,500.00 <span className="text-[10px] font-normal text-muted-foreground ml-1">MXN</span></p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-emerald-300 text-emerald-800 hover:bg-emerald-100/50 text-xs h-8"
+                  onClick={() => router.push('/spf')}
+                >
+                  Ir al Módulo SPF
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Acceso rápido */}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle>Accesos Rápidos</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
-            <Button variant="secondary" className="h-24 flex-col gap-2" onClick={() => router.push('/director/alumnos')}>
-              <Users className="w-6 h-6" />
-              Gestión Alumnos
-            </Button>
-            <Button variant="secondary" className="h-24 flex-col gap-2" onClick={() => router.push('/director/docentes')}>
-              <GraduationCap className="w-6 h-6" />
-              Invitar Docente
-            </Button>
-            <Button variant="secondary" className="h-24 flex-col gap-2 text-muted-foreground" disabled>
-              <CalendarRange className="w-6 h-6" />
-              Agendar (Próximamente)
-            </Button>
-            <Button variant="secondary" className="h-24 flex-col gap-2" onClick={() => router.push('/settings')}>
-              <Settings className="w-6 h-6" />
-              Ajustes del Ciclo
-            </Button>
-          </CardContent>
-        </Card>
+          {/* Acceso rápido - Segunda fila interna */}
+          <Card className="shadow-sm border-muted/20">
+            <CardHeader className="pb-3 border-b bg-muted/5">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Accesos Rápidos</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Button variant="secondary" className="h-20 flex-col gap-1.5 text-xs" onClick={() => router.push('/director/alumnos')}>
+                <Users className="w-5 h-5 text-primary" />
+                Alumnos
+              </Button>
+              <Button variant="secondary" className="h-20 flex-col gap-1.5 text-xs" onClick={() => router.push('/director/docentes')}>
+                <GraduationCap className="w-5 h-5 text-blue-500" />
+                Docentes
+              </Button>
+              <Button variant="secondary" className="h-20 flex-col gap-1.5 text-xs text-muted-foreground" disabled>
+                <CalendarRange className="w-5 h-5" />
+                Eventos
+              </Button>
+              <Button variant="secondary" className="h-20 flex-col gap-1.5 text-xs" onClick={() => router.push('/settings')}>
+                <Settings className="w-5 h-5 text-orange-500" />
+                Ciclo
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* LISTADO DE DOCENTES (Side Panel on Large Screens) */}
+        <div className="lg:col-span-5 xl:col-span-4 space-y-6">
+          <TeachersList 
+            schoolId={schoolId} 
+            maxHeight="650px" 
+            title="Vista de Docentes" 
+            userId={userId}
+          />
+        </div>
       </div>
     </div>
   )

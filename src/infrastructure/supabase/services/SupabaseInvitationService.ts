@@ -13,6 +13,7 @@ export class SupabaseInvitationService implements IInvitationService {
     fullName: string;
     role: 'docente' | 'padre' | 'director';
     schoolId: string;
+    invitedBy: string;
     subRole?: string | null;
     groupId?: string | null;
     specialty?: string | null;
@@ -23,6 +24,7 @@ export class SupabaseInvitationService implements IInvitationService {
         role: params.role,
         subRole: params.subRole,
         schoolId: params.schoolId,
+        invitedBy: params.invitedBy,
         groupId: params.groupId,
         specialty: params.specialty,
         metadata: {
