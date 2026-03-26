@@ -36,6 +36,9 @@ describe('SupabaseInvitationService', () => {
       fullName: 'Juan Perez',
       role: 'docente' as const,
       schoolId: 'school-123',
+      invitedBy: 'director-123',
+      specialty: 'Matemáticas',
+      groupId: 'group-456'
     };
 
     const result = await service.inviteMember(params);
@@ -46,6 +49,9 @@ describe('SupabaseInvitationService', () => {
         role: params.role,
         subRole: undefined,
         schoolId: params.schoolId,
+        invitedBy: params.invitedBy,
+        specialty: 'Matemáticas',
+        groupId: 'group-456',
         metadata: {
           full_name: params.fullName,
         },
@@ -69,6 +75,7 @@ describe('SupabaseInvitationService', () => {
       fullName: 'Juan Perez',
       role: 'docente' as const,
       schoolId: 'school-123',
+      invitedBy: 'director-123',
     };
 
     await expect(service.inviteMember(params)).rejects.toThrow('Error de red');
@@ -82,6 +89,7 @@ describe('SupabaseInvitationService', () => {
       fullName: 'Juan Perez',
       role: 'docente' as const,
       schoolId: 'school-123',
+      invitedBy: 'director-123',
     };
 
     await expect(service.inviteMember(params)).rejects.toThrow('No se recibieron credenciales de la invitación');

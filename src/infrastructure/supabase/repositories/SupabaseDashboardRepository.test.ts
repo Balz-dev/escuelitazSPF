@@ -11,33 +11,21 @@ vi.mock('@/infrastructure/supabase/client', () => ({
 
 /**
  * Helper que construye una cadena de mock compatible con el patrón
- * de queries de Supabase retornadas por SupabaseDashboardRepository.
- * Para consultas con count, resuelve con { count, error }.
- * Para .single(), resuelve con { data, error }.
+ * de queries de Supabase. Permite encadenamiento (.eq().eq()) y es awaitable.
  */
-const makeCountChain = (count: number | null, error: unknown = null) => {
-  const chain: Record<string, ReturnType<typeof vi.fn>> = {}
-  const methods = ['select', 'eq', 'single']
+const makeChain = (resolution: any) => {
+  const chain: any = {}
+  const methods = ['select', 'eq', 'single', 'order', 'limit']
   methods.forEach((m) => {
-    chain[m] = vi.fn().mockReturnValue(chain)
+    chain[m] = vi.fn().mockImplementation(() => chain)
   })
-  // La cadena resuelve su promesa al llamarla (es awaitable)
-  // Aquí simulamos la resolución del Promise.all
-  Object.defineProperty(chain, Symbol.iterator, { value: undefined })
-  // mockResolvedValue para el caso count (select con head:true)
-  ;(chain.eq as ReturnType<typeof vi.fn>).mockResolvedValue({ count, error })
+  // Hace que el objeto sea awaitable
+  chain.then = (onRes: any, onRej: any) => Promise.resolve(resolution).then(onRes, onRej)
   return chain
 }
 
-const makeSingleChain = (data: unknown, error: unknown = null) => {
-  const chain: Record<string, ReturnType<typeof vi.fn>> = {}
-  const methods = ['select', 'eq', 'single']
-  methods.forEach((m) => {
-    chain[m] = vi.fn().mockReturnValue(chain)
-  })
-  ;(chain.single as ReturnType<typeof vi.fn>).mockResolvedValue({ data, error })
-  return chain
-}
+const makeCountChain = (count: number | null, error: any = null) => makeChain({ count, error })
+const makeSingleChain = (data: any, error: any = null) => makeChain({ data, error })
 
 describe('SupabaseDashboardRepository', () => {
   beforeEach(() => {

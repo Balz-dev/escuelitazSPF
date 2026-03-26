@@ -7,10 +7,12 @@ const mockSupabase = {
     getUser: vi.fn(),
     getSession: vi.fn(),
     signOut: vi.fn(),
+    signInWithPassword: vi.fn(),
   },
   functions: {
     invoke: vi.fn(),
   },
+  rpc: vi.fn(),
   from: vi.fn().mockReturnThis(),
   select: vi.fn().mockReturnThis(),
   eq: vi.fn().mockReturnThis(),
@@ -27,6 +29,11 @@ describe('SupabaseAuthService', () => {
   beforeEach(() => {
     authService = new SupabaseAuthService()
     vi.clearAllMocks()
+    // Limpiar la caché estática para evitar que un test afecte al siguiente
+    // ya que SupabaseAuthService tiene una promesa estática para getCurrentUser
+    if ((SupabaseAuthService as any).currentUserPromise) {
+      (SupabaseAuthService as any).currentUserPromise = null
+    }
   })
 
   it('obtiene el perfil del usuario actual mapeado correctamente', async () => {
@@ -141,6 +148,41 @@ describe('SupabaseAuthService', () => {
         user_metadata: {}
       } as any
       expect(authService.getRoleFromUser(user)).toBeNull()
+    })
+  })
+
+  describe('signInWithPassword', () => {
+    it('inicia sesión directamente con email si el identificador contiene @', async () => {
+      mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({ data: { user: {} }, error: null })
+
+      await authService.signInWithPassword('test@example.com', 'pwd123')
+
+      expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'pwd123'
+      })
+      expect(mockSupabase.rpc).not.toHaveBeenCalled()
+    })
+
+    it('resuelve el username antes de iniciar sesión si no es email ni teléfono', async () => {
+      // Mock de la función RPC que resuelve el usuario
+      mockSupabase.rpc.mockResolvedValueOnce({ 
+        data: [{ email: 'real-email@example.com', phone: null }], 
+        error: null 
+      })
+      
+      mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({ data: { user: {} }, error: null })
+
+      await authService.signInWithPassword('maestra.juanita', 'pwd123')
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('resolve_identifier_by_username', { 
+        p_username: 'maestra.juanita' 
+      })
+      
+      expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith({
+        email: 'real-email@example.com',
+        password: 'pwd123'
+      })
     })
   })
 })
