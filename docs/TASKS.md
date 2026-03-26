@@ -38,11 +38,11 @@
 > Arquitectura basada en "Collaborative Data Ownership", detallada en `arquitectura_colaborativa.md`.
 
 ### 🏃 Sprint 1: Director Hub + Módulo Docentes (Pivot)
-- [ ] **Director Dashboard**: Layout y KPIs básicos (alumnos, docentes, ciclo activo).
-- [ ] **Hooks de Autorización**: Implementar `useEntityPermissions` y detección de sub-roles SPF.
+- [x] **Director Dashboard**: Layout y KPIs básicos (alumnos, docentes, ciclo activo).
+- [x] **Hooks de Autorización**: Implementar `useEntityPermissions` y detección de sub-roles SPF.
 - [ ] **Componentes Compartidos Core**:
   - [ ] `ValidationQueue` (Cola de validaciones genérica).
-  - [ ] `InvitationSender` (Envío de invitaciones multi-rol).
+  - [x] `InvitationSender` (Envío de invitaciones multi-rol).
 - [ ] **Dominio Docente**:
   - [ ] `DocenteProfileForm` (Formulario compartido).
   - [ ] Vista de lista de docentes para Director + gestión de estado.

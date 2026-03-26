@@ -1,5 +1,24 @@
 # Diario del Proyecto - Bitácora
 
+## 📅 2026-03-25
+**⏱️ Tiempo invertido:** 2 horas y 5 minutos
+
+### ✅ Qué se logró
+- **Refactorización del Dashboard del Director**: Se completó la transición a **Clean Architecture**, desacoplando totalmente la UI de la infraestructura de Supabase mediante puertos y adaptadores.
+- **Implementación de Métricas y KPIs**: Creación de la entidad `DashboardMetrics` y el repositorio `SupabaseDashboardRepository` con queries paralelas para optimizar la carga del tablero.
+- **Sistema de Invitaciones Seguro**: Desarrollo del `IInvitationService` y el hook `useInvitation`, integrando la Edge Function `invite-user` con validación de permisos en tiempo real.
+- **Seguridad y Automatización de Membresías**: Mejora del trigger `public.handle_new_user()` en la base de datos para asignar automáticamente escuela y rol a los invitados basándose en metadatos.
+- **Componentes de UI Modulares**: Creación de `DashboardHeader`, `MetricsCard` y `InvitationSender` siguiendo estándares de **PWA** y **Rich Aesthetics** para una experiencia premium.
+- **Validación Granular de Permisos**: Integración de `useEntityPermissions` para habilitar/deshabilitar acciones de edición de alumnos y docentes según el rol del director.
+- **Cobertura de Tests al 100%**: Implementación y paso exitoso de pruebas unitarias para `DashboardService`, `SupabaseDashboardRepository` y `SupabaseInvitationService`.
+
+### 🚧 Pendientes para la siguiente sesión
+- Finalizar el sistema avanzado de registro de docentes con asignación de grupos y especialidades.
+- Implementar el flujo de gestión de sustituciones temporales para docentes.
+- Iniciar la carga masiva de alumnos mediante CSV utilizando el nuevo patrón de servicios.
+---
+
+
 ## 📅 2026-03-24
 **⏱️ Tiempo invertido:** 3 horas
 
