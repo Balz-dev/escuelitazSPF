@@ -1,0 +1,125 @@
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90m/mnt/HOME/Proyectos/escuelitazSPF[39m
+
+ [31m❯[39m src/infrastructure/supabase/services/SupabaseAuthService.test.ts [2m([22m[2m8 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 56[2mms[22m[39m
+     [32m✓[39m obtiene el perfil del usuario actual mapeado correctamente[32m 13[2mms[22m[39m
+[31m     [31m×[31m retorna null si el perfil no existe en la tabla de perfiles[39m[32m 21[2mms[22m[39m
+     [32m✓[39m invita a un miembro llamando a la edge function correctamente[32m 3[2mms[22m[39m
+     [32m✓[39m llama a la edge function reset-password correctamente y devuelve la clave[32m 3[2mms[22m[39m
+     [32m✓[39m lanza error si la edge function de resetear contraseña falla[32m 7[2mms[22m[39m
+       [32m✓[39m extrae el rol de app_metadata si existe[32m 1[2mms[22m[39m
+       [32m✓[39m extrae el rol de user_metadata si no existe en app_metadata[32m 1[2mms[22m[39m
+       [32m✓[39m retorna null si no hay rol en los metadatos[32m 1[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/services/SupabaseAdminService.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [31m❯[39m src/infrastructure/supabase/repositories/SupabaseDashboardRepository.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 71[2mms[22m[39m
+[31m     [31m×[31m getMetrics — retorna métricas correctas cuando no hay errores[39m[32m 21[2mms[22m[39m
+[31m     [31m×[31m getMetrics — lanza error si la consulta de escuela falla[39m[32m 24[2mms[22m[39m
+[31m     [31m×[31m getMetrics — activeCycleName muestra período de prueba correctamente[39m[32m 11[2mms[22m[39m
+[31m     [31m×[31m getMetrics — maneja conteos nulos con cero por defecto[39m[32m 3[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/services/SchoolLogoService.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 100[2mms[22m[39m
+ [32m✓[39m src/components/auth/__tests__/auth-guard.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 197[2mms[22m[39m
+ [32m✓[39m src/features/director/hooks/useConvocatorias.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 105[2mms[22m[39m
+ [32m✓[39m src/features/director/hooks/useLocalProfile.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 647[2mms[22m[39m
+ [32m✓[39m src/hooks/useEntityPermissions.test.ts [2m([22m[2m33 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/supabase.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/services/SupabaseDirectorService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/core/shared/utils/cn.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/services/DashboardService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/infrastructure/offline/LocalProfileService.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/repositories/SupabasePreregistrationRepository.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/services/SupabaseInvitationService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/repositories/SupabaseConvocatoriaRepository.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/repositories/SupabaseSchoolRepository.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/infrastructure/supabase/services/__tests__/SupabaseAuthService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/infrastructure/supabase/repositories/SupabaseDashboardRepository.test.ts[2m > [22mSupabaseDashboardRepository[2m > [22mgetMetrics — retorna métricas correctas cuando no hay errores
+[31m[1mTypeError[22m: this.client.from(...).select(...).eq(...).eq is not a function[39m
+[36m [2m❯[22m SupabaseDashboardRepository.getMetrics src/infrastructure/supabase/repositories/SupabaseDashboardRepository.ts:[2m27:12[22m[39m
+    [90m 25|[39m           .select('id, member_roles!inner(role)', { count: 'exact', he…
+    [90m 26|[39m           [33m.[39m[34meq[39m([32m'school_id'[39m[33m,[39m schoolId)
+    [90m 27|[39m           [33m.[39m[34meq[39m([32m'is_active'[39m[33m,[39m [35mtrue[39m)
+    [90m   |[39m            [31m^[39m
+    [90m 28|[39m           [33m.[39m[34meq[39m([32m'member_roles.role'[39m[33m,[39m [32m'docente'[39m)[33m,[39m
+    [90m 29|[39m
+[90m [2m❯[22m src/infrastructure/supabase/repositories/SupabaseDashboardRepository.test.ts:[2m64:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/infrastructure/supabase/repositories/SupabaseDashboardRepository.test.ts[2m > [22mSupabaseDashboardRepository[2m > [22mgetMetrics — lanza error si la consulta de escuela falla
+[31m[1mAssertionError[22m: expected [Function] to throw error including 'Error al obtener datos de la escuela' but got 'this.client.from(...).select(...).eq(…'[39m
+
+Expected: [32m"Error al obtener datos de la escuela"[39m
+Received: [31m"this.client.from(...).select(...).eq(...).eq is not a function"[39m
+
+[36m [2m❯[22m src/infrastructure/supabase/repositories/SupabaseDashboardRepository.test.ts:[2m83:48[22m[39m
+    [90m 81|[39m
+    [90m 82|[39m     [35mconst[39m repo [33m=[39m [35mnew[39m [33mSupabaseDashboardRepository[39m()
+    [90m 83|[39m     [35mawait[39m [34mexpect[39m(repo[33m.[39m[34mgetMetrics[39m([32m'invalid-id'[39m))[33m.[39mrejects[33m.[39m[34mtoThrow[39m(
+    [90m   |[39m                                                [31m^[39m
+    [90m 84|[39m       [32m'Error al obtener datos de la escuela'[39m
+    [90m 85|[39m     )
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/infrastructure/supabase/repositories/SupabaseDashboardRepository.test.ts[2m > [22mSupabaseDashboardRepository[2m > [22mgetMetrics — activeCycleName muestra período de prueba correctamente
+[31m[1mTypeError[22m: this.client.from(...).select(...).eq(...).eq is not a function[39m
+[36m [2m❯[22m SupabaseDashboardRepository.getMetrics src/infrastructure/supabase/repositories/SupabaseDashboardRepository.ts:[2m27:12[22m[39m
+    [90m 25|[39m           .select('id, member_roles!inner(role)', { count: 'exact', he…
+    [90m 26|[39m           [33m.[39m[34meq[39m([32m'school_id'[39m[33m,[39m schoolId)
+    [90m 27|[39m           [33m.[39m[34meq[39m([32m'is_active'[39m[33m,[39m [35mtrue[39m)
+    [90m   |[39m            [31m^[39m
+    [90m 28|[39m           [33m.[39m[34meq[39m([32m'member_roles.role'[39m[33m,[39m [32m'docente'[39m)[33m,[39m
+    [90m 29|[39m
+[90m [2m❯[22m src/infrastructure/supabase/repositories/SupabaseDashboardRepository.test.ts:[2m107:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/infrastructure/supabase/repositories/SupabaseDashboardRepository.test.ts[2m > [22mSupabaseDashboardRepository[2m > [22mgetMetrics — maneja conteos nulos con cero por defecto
+[31m[1mTypeError[22m: this.client.from(...).select(...).eq(...).eq is not a function[39m
+[36m [2m❯[22m SupabaseDashboardRepository.getMetrics src/infrastructure/supabase/repositories/SupabaseDashboardRepository.ts:[2m27:12[22m[39m
+    [90m 25|[39m           .select('id, member_roles!inner(role)', { count: 'exact', he…
+    [90m 26|[39m           [33m.[39m[34meq[39m([32m'school_id'[39m[33m,[39m schoolId)
+    [90m 27|[39m           [33m.[39m[34meq[39m([32m'is_active'[39m[33m,[39m [35mtrue[39m)
+    [90m   |[39m            [31m^[39m
+    [90m 28|[39m           [33m.[39m[34meq[39m([32m'member_roles.role'[39m[33m,[39m [32m'docente'[39m)[33m,[39m
+    [90m 29|[39m
+[90m [2m❯[22m src/infrastructure/supabase/repositories/SupabaseDashboardRepository.test.ts:[2m128:32[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/infrastructure/supabase/services/SupabaseAuthService.test.ts[2m > [22mSupabaseAuthService[2m > [22mretorna null si el perfil no existe en la tabla de perfiles
+[31m[1mAssertionError[22m: expected { id: 'user-123', …(7) } to be null[39m
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+{
+  "avatarUrl": "http://avatar.jpg",
+  "createdAt": 2024-01-01T10:00:00.000Z,
+  "email": "test@example.com",
+  "fullName": "Juan Pérez",
+  "id": "user-123",
+  "mustChangePassword": true,
+  "onboardingCompleted": false,
+  "phone": "555-1234",
+}
+
+[36m [2m❯[22m src/infrastructure/supabase/services/SupabaseAuthService.test.ts:[2m60:21[22m[39m
+    [90m 58|[39m
+    [90m 59|[39m     [35mconst[39m profile [33m=[39m [35mawait[39m authService[33m.[39m[34mgetCurrentUser[39m()
+    [90m 60|[39m     [34mexpect[39m(profile)[33m.[39m[34mtoBeNull[39m()
+    [90m   |[39m                     [31m^[39m
+    [90m 61|[39m   })
+    [90m 62|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m16 passed[39m[22m[90m (18)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m123 passed[39m[22m[90m (128)[39m
+[2m   Start at [22m 16:56:08
+[2m   Duration [22m 21.04s[2m (transform 1.21s, setup 8.78s, import 7.22s, tests 1.53s, environment 102.39s)[22m
+
