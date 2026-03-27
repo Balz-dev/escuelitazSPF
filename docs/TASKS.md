@@ -1,6 +1,6 @@
 # EscuelitazSPF – Registro de Tareas y Fases
 
-> **Estado**: Fase 2 (Autenticación) y Gestión SaaS completada sobre arquitectura PWA (Offline-First).
+> **Estado**: Sprint 1 del Director Hub completado. Iniciando Sprint 2 (Docente Dashboard) — 2026-03-27.
 
 ---
 
@@ -37,26 +37,34 @@
 ## 🔄 Fase 4: Arquitectura Colaborativa y Roles (En Proceso)
 > Arquitectura basada en "Collaborative Data Ownership", detallada en `arquitectura_colaborativa.md`.
 
-### 🏃 Sprint 1: Director Hub + Módulo Docentes (Pivot)
+### ✅ Sprint 1: Director Hub + Módulo Docentes (COMPLETO)
 - [x] **Director Dashboard**: Layout y KPIs básicos (alumnos, docentes, ciclo activo).
-- [x] **Hooks de Autorización**: Implementar `useEntityPermissions` y detección de sub-roles SPF.
-- [ ] **Componentes Compartidos Core**:
-  - [ ] `ValidationQueue` (Cola de validaciones genérica).
-  - [x] `InvitationSender` (Envío de invitaciones multi-rol).
-- [ ] **Dominio Docente**:
-  - [ ] `DocenteProfileForm` (Formulario compartido).
-  - [ ] Vista de lista de docentes para Director + gestión de estado.
-- [ ] **Dominio Alumno (Base)**:
-  - [ ] `StudentRegistrationForm` (Formulario compartido).
-  - [ ] Vista de lista de alumnos de la escuela.
+- [x] **Hooks de Autorización**: `useEntityPermissions` + detección de sub-roles SPF.
+- [x] **Componentes Compartidos Core**:
+  - [x] `ValidationQueue` — (`src/components/shared/ValidationQueue.tsx`)
+  - [x] `InvitationSender` — (`src/components/shared/InvitationSender.tsx`)
+- [x] **Dominio Docente**:
+  - [x] `DocenteProfileForm` — (`src/components/shared/DocenteProfileForm.tsx`)
+  - [x] `TeachersList` con acciones CRUD + suplencias — (`src/features/director/components/TeachersList.tsx`)
+  - [x] Página `/director/docentes` — registro, invitación y gestión completa.
+  - [x] `RegisterTeacherDialog` + `EditTeacherDialog` + `CreateGroupDialog`
+  - [x] Lógica de sustituciones: `startSubstitution` / `endSubstitution` en `SupabaseDirectorService`
+- [x] **Dominio Alumno (Base)**:
+  - [x] `StudentRegistrationForm` — (`src/components/shared/StudentRegistrationForm.tsx`)
+  - [x] Página `/director/alumnos` — registro + cola de validación.
 
-### 🏃 Sprint 2: Docente Dashboard
-- [ ] **Docente Dashboard**: Layout y KPIs filtrados por su grupo asignado.
+### 🔄 Sprint 2: Docente Dashboard (EN PROCESO — 2026-03-27)
+- [ ] **Docente Dashboard Completo**: Actualmente es un placeholder. Requiere:
+  - [ ] KPIs propios: alumnos del grupo, asistencia, pre-registros pendientes.
+  - [ ] `useDashboardMetrics` adaptado o nuevo hook `useDocenteMetrics`.
 - [ ] **Dominio Alumno (Docente)**:
-  - [ ] Vista de alumnos filtrada por el grupo del docente.
-  - [ ] `ValidationQueue` específica para pre-registros de su grupo.
-- [ ] **Dominio Perfil**:
-  - [ ] Panel de auto-edición usando `DocenteProfileForm`.
+  - [ ] Vista de alumnos filtrada por `group_id` del docente logueado.
+  - [ ] Ruta `/docente/alumnos` con `ValidationQueue` para pre-registros de su grupo.
+- [ ] **Dominio Perfil del Docente**:
+  - [ ] Ruta `/docente/perfil` con `DocenteProfileForm` en modo auto-edición.
+  - [ ] Guardar cambios vía `IDirectorService.updateTeacher` (o puerto dedicado).
+- [ ] **Detección del grupo asignado**: Hook `useCurrentTeacher` que resuelva el `group_id` del docente conectado.
+- [ ] **Tests**: Cobertura para `useDocenteMetrics` y `useCurrentTeacher`.
 
 ### 🏃 Sprint 3: Módulo SPF (Microaplicación Semi-Autónoma)
 > Exclusivo para Padres con sub-roles (Presidente, Tesorero, Secretario, Vocal, Suplente).
