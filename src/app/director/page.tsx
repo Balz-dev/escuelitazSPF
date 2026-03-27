@@ -103,7 +103,7 @@ export default function DirectorDashboard() {
         <DashboardHeader 
           schoolName={schoolInfo?.name}
           activeCycle={activeCycle}
-          directorName={directorName.split(' ')[0]} 
+          userName={directorName.split(' ')[0]} 
         />
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" onClick={refresh} disabled={metricsLoading} aria-label="Actualizar métricas">
